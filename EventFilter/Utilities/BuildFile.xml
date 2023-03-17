@@ -2,13 +2,14 @@
 <use name="stdcxx-fs"/>
 <use name="tbb"/>
 <use name="DataFormats/FEDRawData"/>
+<use name="DataFormats/L1Scouting"/>
 <use name="DataFormats/TCDS"/>
-<use name="DataFormats/L1Trigger"/>
 <use name="FWCore/Framework"/>
 <use name="FWCore/MessageLogger"/>
 <use name="FWCore/ServiceRegistry"/>
 <use name="FWCore/Sources"/>
 <use name="IOPool/Streamer"/>
+<use name="DataFormats/L1Trigger"/>
 <export>
   <lib name="1"/>
 </export>

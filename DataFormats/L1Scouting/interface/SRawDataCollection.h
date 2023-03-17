@@ -13,11 +13,11 @@
   *
   */
 
-class SDSRawDataCollection: public edm::DoNotRecordParents {
+class SRDCollection: public edm::DoNotRecordParents {
   public:
-    SDSRawDataCollection();
+    SRDCollection();
 
-    virtual ~SDSRawDataCollection();
+    virtual ~SRDCollection();
 
     // retrive data for the scouting source @params srcId
     const FEDRawData& FEDData(int sourceId) const;
@@ -25,14 +25,18 @@ class SDSRawDataCollection: public edm::DoNotRecordParents {
     // retrive data for the scouting source @params srcId
     FEDRawData& FEDData(int sourceId);
 
-    SDSRawDataCollection(const SDSRawDataCollection&);
+    SRDCollection(const SRDCollection&);
 
-    void swap(SDSRawDataCollection& other) { data_.swap(other.data_); }
+    void swap(SRDCollection& other) { data_.swap(other.data_); }
+
+    void setSourceSize(int sourceId, size_t size) {len_[sourceId] = size;}
+    size_t getSourceSize(int sourceId) {return len_[sourceId];}
 
   private:
-    std::vector<FEDRawData> data_;  //< the raw data
+    std::vector<FEDRawData> data_;  // vector of raw data
+    std::vector<size_t> len_;       // (Real) length of each buffer
 };
 
-inline void swap(SDSRawDataCollection& a, SDSRawDataCollection& b) { a.swap(b); }
+inline void swap(SRDCollection& a, SRDCollection& b) { a.swap(b); }
 
 #endif // L1Scouting_SRawDataCollection_h

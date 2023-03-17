@@ -3,7 +3,7 @@
 
 #include "EventFilter/Utilities/interface/DAQSource.h"
 #include "EventFilter/Utilities/interface/DAQSourceModels.h"
-#include "DataFormats/L1Scouting/interface/SDSRawDataCollection.h"
+#include "DataFormats/L1Scouting/interface/SRawDataCollection.h"
 #include "DataFormats/L1Scouting/interface/SDSNumbering.h"
 
 #include "FWCore/Framework/interface/Event.h"
@@ -25,7 +25,7 @@ public:
   void readEvent(edm::EventPrincipal& eventPrincipal) override;
 
   //non-virtual
-  //edm::Timestamp fillFRDCollection(FEDRawDataCollection& rawData, bool& tcdsInRange, unsigned char*& tcds_pointer);
+  void fillSRDCollection( SRDCollection& rawData, char* buff, size_t len);
 
   int dataVersion() const override { return detectedFRDversion_; }
   void detectVersion(unsigned char* fileBuf, uint32_t fileHeaderOffset) override {
@@ -48,6 +48,15 @@ public:
                          size_t fileHeaderSize) override {
     fileHeaderSize_ = fileHeaderSize;
     numFiles_ = fileSizes.size();
+    
+    // initalize vectors keeping tracks of valid orbits and completed blocks
+    validOrbits_.clear();
+    completedBlocks_.clear();
+    for (unsigned int i=0; i<fileSizes.size(); i++){
+      validOrbits_.push_back(true);
+      completedBlocks_.push_back(false);
+    }
+
     //add offset address for each file payload
     dataBlockAddrs_.clear();
     dataBlockAddrs_.push_back(addr);
@@ -116,6 +125,12 @@ private:
   bool blockCompleted_ = true;
   bool eventCached_ = false;
   std::vector<std::filesystem::path> buPaths_;
+
+  // keep track of valid (=aligned) orbits from different data sources
+  std::vector<bool> validOrbits_;
+  unsigned int currOrbit = 0xFFFFFFFF;
+
+  std::vector<bool> completedBlocks_;
 };
 
 #endif // EventFilter_Utilities_DAQSourceModelsScoutingRun3_h
