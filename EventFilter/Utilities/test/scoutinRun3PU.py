@@ -52,7 +52,7 @@ options.parseArguments()
 
 cmsswbase = os.path.expandvars("$CMSSW_BASE/")
 
-process = cms.Process("TESTFU")
+process = cms.Process("SCPU")
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
@@ -69,6 +69,11 @@ process.MessageLogger = cms.Service("MessageLogger",
 
 process.FastMonitoringService = cms.Service("FastMonitoringService",
     sleepTime = cms.untracked.int32(1)
+)
+
+process.Timing = cms.Service("Timing",
+  summaryOnly = cms.untracked.bool(False),
+  useJobReport = cms.untracked.bool(True)
 )
 
 process.EvFDaqDirector = cms.Service("EvFDaqDirector",
@@ -106,10 +111,30 @@ process.source = cms.Source("DAQSource",
 
 )
 
+## test pluging
+process.GmtUnpacker = cms.EDProducer('ScGMTRawToDigi',
+  srcInputTag = cms.InputTag('rawDataCollector'),
+  debug=cms.untracked.bool(False)
+)
+process.CaloUnpacker = cms.EDProducer('ScCaloRawToDigi',
+  srcInputTag = cms.InputTag('rawDataCollector'),
+  debug=cms.untracked.bool(False)
+)
+
 process.output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('file:PoolOutputTest.root'),
-    outputCommands = cms.untracked.vstring("drop *","keep *_rawDataCollector_*_*")
+    outputCommands = cms.untracked.vstring(
+        "drop *", "keep *_rawDataCollector_*_*",
+        "keep *_GmtUnpacker_*_*", "keep *_CaloUnpacker_*_*"
+        )
     )
+
+rawToDigiTask = cms.Task(
+  process.GmtUnpacker,
+  process.CaloUnpacker
+)
+
+process.p = cms.Path(process.GmtUnpacker*process.CaloUnpacker)
 
 process.ep = cms.EndPath(
     process.output

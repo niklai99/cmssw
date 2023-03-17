@@ -30,7 +30,7 @@ class SRDCollection: public edm::DoNotRecordParents {
     void swap(SRDCollection& other) { data_.swap(other.data_); }
 
     void setSourceSize(int sourceId, size_t size) {len_[sourceId] = size;}
-    size_t getSourceSize(int sourceId) {return len_[sourceId];}
+    size_t getSourceSize(int sourceId) const {return len_[sourceId];}
 
   private:
     std::vector<FEDRawData> data_;  // vector of raw data
