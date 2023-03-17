@@ -1,0 +1,5 @@
+<lcgdict>
+  <class name="SDSRawDataCollection" />
+  <class name="edm::Wrapper<SDSRawDataCollection>" splitLevel="0"/>
+  <class name="edm::RefProd<SDSRawDataCollection>"/>
+</lcgdict>
