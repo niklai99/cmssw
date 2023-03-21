@@ -18,19 +18,19 @@ options.register ('daqSourceMode',
                   "DAQ source data mode")
 
 options.register ('buBaseDir',
-                  'ramdisk', # default value
+                  '/dev/shm/ramdisk', # default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.string,          # string, int, or float
                   "BU base directory")
 
 options.register ('fuBaseDir',
-                  'data', # default value
+                  '/dev/shm/data', # default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.string,          # string, int, or float
                   "BU base directory")
 
 options.register ('fffBaseDir',
-                  '.', # default value
+                  '/dev/shm', # default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.string,          # string, int, or float
                   "FFF base directory")
@@ -42,7 +42,7 @@ options.register ('numThreads',
                   "Number of CMSSW threads")
 
 options.register ('numFwkStreams',
-                  2, # default value
+                  1, # default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.int,          # string, int, or float
                   "Number of CMSSW streams")
@@ -122,11 +122,14 @@ process.CaloUnpacker = cms.EDProducer('ScCaloRawToDigi',
 )
 
 process.output = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('file:PoolOutputTest.root'),
+    fileName = cms.untracked.string('file:/dev/shm/PoolOutputTest.root'),
     outputCommands = cms.untracked.vstring(
-        "drop *", "keep *_rawDataCollector_*_*",
-        "keep *_GmtUnpacker_*_*", "keep *_CaloUnpacker_*_*"
-        )
+        "drop *",
+        #"keep *_rawDataCollector_*_*",
+        "keep *_GmtUnpacker_*_*",
+        "keep *_CaloUnpacker_*_*"
+        ),
+    #compressionLevel = cms.untracked.int32(1)
     )
 
 rawToDigiTask = cms.Task(

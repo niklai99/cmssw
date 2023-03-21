@@ -103,8 +103,8 @@ void ScCaloRawToDigi::unpackOrbit(
 
         if (Eta > 127) Eta = Eta - 256;
         
-        l1t::Jet jet(*dummyLVec_, ET, Eta, Phi, Iso);
-        jets->push_back(bx, jet);
+        // l1t::Jet jet(*dummyLVec_, ET, Eta, Phi, Iso);
+        jets->push_back(bx, l1t::Jet(*dummyLVec_, ET, Eta, Phi, Iso));
         // bx_jets.emplace_back(l1t::Jet(*dummyLVec_, ET, Eta, Phi, Iso));
       } 
     } // end link1 jet unpacking loop
@@ -120,8 +120,8 @@ void ScCaloRawToDigi::unpackOrbit(
 
         if (Eta > 127) Eta = Eta - 256;
         
-        l1t::Jet jet(*dummyLVec_, ET, Eta, Phi, Iso);
-        jets->push_back(bx, jet);
+        // l1t::Jet jet(*dummyLVec_, ET, Eta, Phi, Iso);
+        jets->push_back(bx, l1t::Jet(*dummyLVec_, ET, Eta, Phi, Iso));
         // bx_jets.emplace_back(l1t::Jet(*dummyLVec_, ET, Eta, Phi, Iso));
       } 
     } // end link1 jet unpacking loop
@@ -140,8 +140,8 @@ void ScCaloRawToDigi::unpackOrbit(
 
         if (Eta > 127) Eta = Eta - 256;
         
-        l1t::EGamma eGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso);
-        eGammas->push_back(bx, eGamma);
+        // l1t::EGamma eGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso);
+        eGammas->push_back(bx, l1t::EGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso));
         // bx_eGammas.emplace_back(l1t::EGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso));
       }
     } // end eg link 1
@@ -156,8 +156,8 @@ void ScCaloRawToDigi::unpackOrbit(
 
         if (Eta > 127) Eta = Eta - 256;
         
-        l1t::EGamma eGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso);
-        eGammas->push_back(bx, eGamma);
+        // l1t::EGamma eGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso);
+        eGammas->push_back(bx, l1t::EGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso));
         // bx_eGammas.emplace_back(l1t::EGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso));
       }
 
@@ -177,8 +177,8 @@ void ScCaloRawToDigi::unpackOrbit(
 
           if (Eta > 127) Eta = Eta - 256; 
 
-          l1t::Tau tau(*dummyLVec_, ET, Eta, Phi, 0, Iso);
-          taus->push_back(bx, tau);
+          // l1t::Tau tau(*dummyLVec_, ET, Eta, Phi, 0, Iso);
+          taus->push_back(bx, l1t::Tau(*dummyLVec_, ET, Eta, Phi, 0, Iso));
           //bx_taus.emplace_back(l1t::Tau(*dummyLVec_, ET, Eta, Phi, 0, Iso));
       }
     } // end tau link 1
@@ -194,7 +194,7 @@ void ScCaloRawToDigi::unpackOrbit(
           if (Eta > 127) Eta = Eta - 256; 
 
           l1t::Tau tau(*dummyLVec_, ET, Eta, Phi, 0, Iso);
-          taus->push_back(bx, tau);
+          taus->push_back(bx, l1t::Tau(*dummyLVec_, ET, Eta, Phi, 0, Iso));
           //bx_taus.emplace_back(l1t::Tau(*dummyLVec_, ET, Eta, Phi, 0, Iso));
       }
     } // end tau unpacker
