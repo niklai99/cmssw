@@ -313,4 +313,10 @@
   <class name="edm::Wrapper<l1t::TkJetWordCollection>"/>
   <class name="std::bitset<70>"/>
 
+  <class name="std::vector<std::vector<l1t::Muon> >"/>
+  <class name="std::vector<std::vector<l1t::Jet> >"/>
+  <class name="std::vector<std::vector<l1t::EGamma> >"/>
+  <class name="std::vector<std::vector<l1t::Tau> >"/>
+  <class name="std::vector<std::vector<l1t::EtSum> >"/>
+
 </lcgdict>

@@ -8,6 +8,7 @@
 
 #include "DataFormats/FEDRawData/interface/FEDRawData.h"
 #include "DataFormats/L1Scouting/interface/SRawDataCollection.h"
+#include "DataFormats/L1Scouting/interface/OrbitCollection.h"
 #include "DataFormats/L1Scouting/interface/SDSNumbering.h"
 #include "DataFormats/L1Trigger/interface/BXVector.h"
 
@@ -31,12 +32,12 @@ private:
   //void endStream() override;
 
   void unpackOrbit(
-    //scoutingRun3::MuonOrbitCollection* muons,
-    l1t::MuonBxCollection* muons,
+    scoutingRun3::MuonOrbitCollection* muons,
+    //l1t::MuonBxCollection* muons,
     const unsigned char* buf, size_t len
   );
 
-  // std::vector<l1t::Muon> bx_muons;
+  std::vector<l1t::Muon> bx_muons;
   std::unique_ptr<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>>> dummyLVec_;
 
   bool debug = false;

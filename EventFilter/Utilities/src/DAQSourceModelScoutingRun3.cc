@@ -80,11 +80,12 @@ void DataModeScoutingRun3::fillSRDCollection(
   // is expecting to receive payloads which are multiple of 8 bytes.
   // (not true for scouting payloads)
   FEDRawData& fedData = rawData.FEDData(sourceId);
-  rawData.setSourceSize(sourceId, orbitSize);
+  fedData.resize(orbitSize, 4);
+  //rawData.setSourceSize(sourceId, orbitSize);
 
   // FEDRawData is expecting multiples of 8 bytes,
   // add a padding.
-  fedData.resize(orbitSize + orbitSize%8);
+  //fedData.resize(orbitSize + orbitSize%8);
   memcpy(fedData.data(), buff+pos, orbitSize);
 
   return;

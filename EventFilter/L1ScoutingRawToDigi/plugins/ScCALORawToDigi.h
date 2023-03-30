@@ -8,6 +8,7 @@
 
 #include "DataFormats/FEDRawData/interface/FEDRawData.h"
 #include "DataFormats/L1Scouting/interface/SRawDataCollection.h"
+#include "DataFormats/L1Scouting/interface/OrbitCollection.h"
 #include "DataFormats/L1Scouting/interface/SDSNumbering.h"
 #include "DataFormats/L1Trigger/interface/BXVector.h"
 
@@ -32,8 +33,10 @@ private:
   void produce(edm::Event&, const edm::EventSetup&) override;
 
   void unpackOrbit(
-    l1t::JetBxCollection* jets, l1t::TauBxCollection* taus,
-    l1t::EGammaBxCollection* eGammas, l1t::EtSumBxCollection* etSums,
+    //l1t::JetBxCollection* jets, l1t::TauBxCollection* taus,
+    //l1t::EGammaBxCollection* eGammas, l1t::EtSumBxCollection* etSums,
+    scoutingRun3::JetOrbitCollection* jets, scoutingRun3::TauOrbitCollection* taus,
+    scoutingRun3::EGammaOrbitCollection* eGammas, scoutingRun3::EtSumOrbitCollection* etSums,
     const unsigned char* buf, size_t len
   );
 

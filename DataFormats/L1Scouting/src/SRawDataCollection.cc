@@ -1,13 +1,9 @@
 #include <DataFormats/L1Scouting/interface/SRawDataCollection.h>
 #include <DataFormats/L1Scouting/interface/SDSNumbering.h>
 
-SRDCollection::SRDCollection() 
-    : data_(SDSNumbering::lastSDSId() + 1),
-      len_(SDSNumbering::lastSDSId() + 1)
-    {}
+SRDCollection::SRDCollection() : data_(SDSNumbering::lastSDSId() + 1) {}
 
-SRDCollection::SRDCollection(const SRDCollection& in)
-    : data_(in.data_), len_(in.len_) {}
+SRDCollection::SRDCollection(const SRDCollection& in) : data_(in.data_) {}
 
 SRDCollection::~SRDCollection() {}
 

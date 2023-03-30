@@ -36,13 +36,13 @@ options.register ('fffBaseDir',
                   "FFF base directory")
 
 options.register ('numThreads',
-                  2, # default value
+                  12, # default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.int,          # string, int, or float
                   "Number of CMSSW threads")
 
 options.register ('numFwkStreams',
-                  1, # default value
+                  3, # default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.int,          # string, int, or float
                   "Number of CMSSW streams")
@@ -54,7 +54,7 @@ cmsswbase = os.path.expandvars("$CMSSW_BASE/")
 
 process = cms.Process("SCPU")
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(512)
 )
 
 process.options = cms.untracked.PSet(
@@ -137,7 +137,8 @@ rawToDigiTask = cms.Task(
   process.CaloUnpacker
 )
 
-process.p = cms.Path(process.GmtUnpacker*process.CaloUnpacker)
+process.p = cms.Path(rawToDigiTask)
+#process.p = cms.Path(process.GmtUnpacker*process.CaloUnpacker)
 
 process.ep = cms.EndPath(
     process.output

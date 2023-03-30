@@ -5,10 +5,11 @@ ScGMTRawToDigi::ScGMTRawToDigi(const edm::ParameterSet& iConfig) {
   srcInputTag  = iConfig.getParameter<InputTag>( "srcInputTag" );
   debug = iConfig.getUntrackedParameter<bool>("debug", false);
 
-  produces<l1t::MuonBxCollection>().setBranchAlias( "MuonBxCollection" );
+  // produces<l1t::MuonBxCollection>().setBranchAlias( "MuonBxCollection" );
+  produces<scoutingRun3::MuonOrbitCollection>().setBranchAlias( "MuonOrbitCollection" );
   rawToken = consumes<SRDCollection>(srcInputTag);
   
-  //  bx_muons.reserve(8);
+  bx_muons.reserve(8);
   dummyLVec_.reset( new ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>>() );
 }
 
@@ -21,9 +22,10 @@ void ScGMTRawToDigi::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   iEvent.getByToken( rawToken, ScoutingRawDataCollection );
 
   const FEDRawData& sourceRawData = ScoutingRawDataCollection->FEDData(SDSNumbering::GmtSDSID);
-  size_t orbitSize = ScoutingRawDataCollection->getSourceSize(SDSNumbering::GmtSDSID);
+  size_t orbitSize = sourceRawData.size();
 
-  std::unique_ptr<l1t::MuonBxCollection> unpackedMuons(new l1t::MuonBxCollection);
+  //std::unique_ptr<l1t::MuonBxCollection> unpackedMuons(new l1t::MuonBxCollection);
+  std::unique_ptr<scoutingRun3::MuonOrbitCollection> unpackedMuons(new scoutingRun3::MuonOrbitCollection);
   
   if((sourceRawData.size()==0) && debug){
     std::cout << "No raw data for GMT FED\n";  
@@ -36,14 +38,15 @@ void ScGMTRawToDigi::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
 }
 
 void ScGMTRawToDigi::unpackOrbit(
-  l1t::MuonBxCollection* muons, 
+  //l1t::MuonBxCollection* muons, 
+  scoutingRun3::MuonOrbitCollection* muons,
   const unsigned char* buf, size_t len
   ){
   
   using namespace scoutingRun3;
   size_t pos = 0;
 
-  muons->setBXRange(0,3565);
+  //muons->setBXRange(0,3565);
   
   while (pos < len) {
     assert(pos+4 <= len);
@@ -69,7 +72,7 @@ void ScGMTRawToDigi::unpackOrbit(
     
     // Unpack muons for this BX
     
-    // bx_muons.clear();
+    bx_muons.clear();
     
     // cuts should be applied
     bool excludeIntermediate=true;
@@ -155,8 +158,8 @@ void ScGMTRawToDigi::unpackOrbit(
       ); 
 
       
-      //bx_muons.push_back(muon);
       muons->push_back(bx, muon);
+      //muons->push_back(bx, muon);
 
     } // end of bx
     
@@ -164,6 +167,8 @@ void ScGMTRawToDigi::unpackOrbit(
     //muons->push_back(bx, bx_muons);
 
   } // end orbit while loop
+
+  muons->flatten();
 
 }
 

@@ -6,10 +6,15 @@ ScCaloRawToDigi::ScCaloRawToDigi(const edm::ParameterSet& iConfig) {
   srcInputTag  = iConfig.getParameter<InputTag>( "srcInputTag" );
   debug = iConfig.getUntrackedParameter<bool>("debug", false);
 
-  produces<l1t::JetBxCollection>().setBranchAlias( "JetBxCollection" );
-  produces<l1t::TauBxCollection>().setBranchAlias( "TauBxCollection" );
-  produces<l1t::EGammaBxCollection>().setBranchAlias( "EGammaBxCollection" );
-  produces<l1t::EtSumBxCollection>().setBranchAlias( "EtSumBxCollection" );
+  // produces<l1t::JetBxCollection>().setBranchAlias( "JetBxCollection" );
+  // produces<l1t::TauBxCollection>().setBranchAlias( "TauBxCollection" );
+  // produces<l1t::EGammaBxCollection>().setBranchAlias( "EGammaBxCollection" );
+  // produces<l1t::EtSumBxCollection>().setBranchAlias( "EtSumBxCollection" );
+
+  produces<JetOrbitCollection>().setBranchAlias( "JetOrbitCollection" );
+  produces<TauOrbitCollection>().setBranchAlias( "TauOrbitCollection" );
+  produces<EGammaOrbitCollection>().setBranchAlias( "EGammaOrbitCollection" );
+  produces<EtSumOrbitCollection>().setBranchAlias( "EtSumOrbitCollection" );
   
   rawToken = consumes<SRDCollection>(srcInputTag);
   
@@ -30,12 +35,17 @@ void ScCaloRawToDigi::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken( rawToken, ScoutingRawDataCollection );
 
   const FEDRawData& sourceRawData = ScoutingRawDataCollection->FEDData(SDSNumbering::CaloSDSID);
-  size_t orbitSize = ScoutingRawDataCollection->getSourceSize(SDSNumbering::CaloSDSID);
+  size_t orbitSize = sourceRawData.size();
 
-  std::unique_ptr<l1t::JetBxCollection> unpackedJets(new l1t::JetBxCollection);
-  std::unique_ptr<l1t::TauBxCollection> unpackedTaus(new l1t::TauBxCollection);
-  std::unique_ptr<l1t::EGammaBxCollection> unpackedEGammas(new l1t::EGammaBxCollection);
-  std::unique_ptr<l1t::EtSumBxCollection> unpackedEtSums(new l1t::EtSumBxCollection);
+  // std::unique_ptr<l1t::JetBxCollection> unpackedJets(new l1t::JetBxCollection);
+  // std::unique_ptr<l1t::TauBxCollection> unpackedTaus(new l1t::TauBxCollection);
+  // std::unique_ptr<l1t::EGammaBxCollection> unpackedEGammas(new l1t::EGammaBxCollection);
+  // std::unique_ptr<l1t::EtSumBxCollection> unpackedEtSums(new l1t::EtSumBxCollection);
+
+  std::unique_ptr<JetOrbitCollection> unpackedJets(new JetOrbitCollection);
+  std::unique_ptr<TauOrbitCollection> unpackedTaus(new TauOrbitCollection);
+  std::unique_ptr<EGammaOrbitCollection> unpackedEGammas(new EGammaOrbitCollection);
+  std::unique_ptr<EtSumOrbitCollection> unpackedEtSums(new EtSumOrbitCollection);
   
   if((sourceRawData.size()==0) && debug ){
     std::cout << "No raw data for CALO FED\n";  
@@ -55,8 +65,10 @@ void ScCaloRawToDigi::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 }
 
 void ScCaloRawToDigi::unpackOrbit(
-  l1t::JetBxCollection* jets, l1t::TauBxCollection* taus,
-  l1t::EGammaBxCollection* eGammas, l1t::EtSumBxCollection* etSums,
+  // l1t::JetBxCollection* jets, l1t::TauBxCollection* taus,
+  // l1t::EGammaBxCollection* eGammas, l1t::EtSumBxCollection* etSums,
+  scoutingRun3::JetOrbitCollection* jets, scoutingRun3::TauOrbitCollection* taus,
+  scoutingRun3::EGammaOrbitCollection* eGammas, scoutingRun3::EtSumOrbitCollection* etSums,
   const unsigned char* buf, size_t len
   ){
   
@@ -64,10 +76,10 @@ void ScCaloRawToDigi::unpackOrbit(
   
   size_t pos = 0;
 
-  jets->setBXRange(0,3565);
-  taus->setBXRange(0,3565);
-  eGammas->setBXRange(0,3565);
-  etSums->setBXRange(0,3565);
+  // jets->setBXRange(0,3565);
+  // taus->setBXRange(0,3565);
+  // eGammas->setBXRange(0,3565);
+  // etSums->setBXRange(0,3565);
 
   while (pos < len) {
     
@@ -103,8 +115,8 @@ void ScCaloRawToDigi::unpackOrbit(
 
         if (Eta > 127) Eta = Eta - 256;
         
-        // l1t::Jet jet(*dummyLVec_, ET, Eta, Phi, Iso);
-        jets->push_back(bx, l1t::Jet(*dummyLVec_, ET, Eta, Phi, Iso));
+        l1t::Jet jet(*dummyLVec_, ET, Eta, Phi, Iso);
+        jets->push_back(bx,jet);
         // bx_jets.emplace_back(l1t::Jet(*dummyLVec_, ET, Eta, Phi, Iso));
       } 
     } // end link1 jet unpacking loop
@@ -120,8 +132,8 @@ void ScCaloRawToDigi::unpackOrbit(
 
         if (Eta > 127) Eta = Eta - 256;
         
-        // l1t::Jet jet(*dummyLVec_, ET, Eta, Phi, Iso);
-        jets->push_back(bx, l1t::Jet(*dummyLVec_, ET, Eta, Phi, Iso));
+        l1t::Jet jet(*dummyLVec_, ET, Eta, Phi, Iso);
+        jets->push_back(bx,jet);
         // bx_jets.emplace_back(l1t::Jet(*dummyLVec_, ET, Eta, Phi, Iso));
       } 
     } // end link1 jet unpacking loop
@@ -140,8 +152,8 @@ void ScCaloRawToDigi::unpackOrbit(
 
         if (Eta > 127) Eta = Eta - 256;
         
-        // l1t::EGamma eGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso);
-        eGammas->push_back(bx, l1t::EGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso));
+        l1t::EGamma eGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso);
+        eGammas->push_back(bx, eGamma);
         // bx_eGammas.emplace_back(l1t::EGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso));
       }
     } // end eg link 1
@@ -156,8 +168,8 @@ void ScCaloRawToDigi::unpackOrbit(
 
         if (Eta > 127) Eta = Eta - 256;
         
-        // l1t::EGamma eGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso);
-        eGammas->push_back(bx, l1t::EGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso));
+        l1t::EGamma eGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso);
+        eGammas->push_back(bx, eGamma);
         // bx_eGammas.emplace_back(l1t::EGamma(*dummyLVec_, ET, Eta, Phi, 0, Iso));
       }
 
@@ -177,8 +189,8 @@ void ScCaloRawToDigi::unpackOrbit(
 
           if (Eta > 127) Eta = Eta - 256; 
 
-          // l1t::Tau tau(*dummyLVec_, ET, Eta, Phi, 0, Iso);
-          taus->push_back(bx, l1t::Tau(*dummyLVec_, ET, Eta, Phi, 0, Iso));
+          l1t::Tau tau(*dummyLVec_, ET, Eta, Phi, 0, Iso);
+          taus->push_back(bx, tau);
           //bx_taus.emplace_back(l1t::Tau(*dummyLVec_, ET, Eta, Phi, 0, Iso));
       }
     } // end tau link 1
@@ -191,10 +203,10 @@ void ScCaloRawToDigi::unpackOrbit(
           Phi   = ((bl->tau2[i] >> demux::shiftsTau::phi) & demux::masksTau::phi);
           Iso   = ((bl->tau2[i] >> demux::shiftsTau::iso) & demux::masksTau::iso);
 
-          if (Eta > 127) Eta = Eta - 256; 
+          if (Eta > 127) Eta = Eta - 256;   
 
           l1t::Tau tau(*dummyLVec_, ET, Eta, Phi, 0, Iso);
-          taus->push_back(bx, l1t::Tau(*dummyLVec_, ET, Eta, Phi, 0, Iso));
+          taus->push_back(bx, tau);
           //bx_taus.emplace_back(l1t::Tau(*dummyLVec_, ET, Eta, Phi, 0, Iso));
       }
     } // end tau unpacker
@@ -215,16 +227,20 @@ void ScCaloRawToDigi::unpackOrbit(
     ETEttem     = ((bl->sum[0] >> demux::shiftsESums::ETEttem)     & demux::masksESums::ETEttem);
     //ETMinBiasHF = ((bl->sum[0] >> demux::shiftsESums::ETMinBiasHF) & demux::masksESums::ETMinBiasHF);
     
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kTotalEt, ETEt));
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kTotalEtEm, ETEttem));
+    l1t::EtSum sum = l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kTotalEt, ETEt);
+    etSums->push_back(bx, sum);
+    sum  = l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kTotalEtEm, ETEttem);
+    etSums->push_back(bx, sum);
     
     // HT
     HTEt         = ((bl->sum[1] >> demux::shiftsESums::HTEt)         & demux::masksESums::HTEt);
     HTtowerCount = ((bl->sum[1] >> demux::shiftsESums::HTtowerCount) & demux::masksESums::HTtowerCount);
     //HTMinBiasHF  = ((bl->sum[1] >> demux::shiftsESums::HTMinBiasHF)  & demux::masksESums::HTMinBiasHF);
 
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kTotalHt, HTEt));
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kTowerCount, HTtowerCount));
+    sum = l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kTotalHt, HTEt);
+    etSums->push_back(bx, sum);
+    sum = l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kTowerCount, HTtowerCount);
+    etSums->push_back(bx, sum);
 
     // ETMiss
     ETmissEt        = ((bl->sum[2] >> demux::shiftsESums::ETmissEt)        & demux::masksESums::ETmissEt);
@@ -232,8 +248,10 @@ void ScCaloRawToDigi::unpackOrbit(
     ETmissASYMET    = ((bl->sum[2] >> demux::shiftsESums::ETmissASYMET)    & demux::masksESums::ETmissASYMET);
     //ETmissMinBiasHF = ((bl->sum[2] >> demux::shiftsESums::ETmissMinBiasHF) & demux::masksESums::ETmissMinBiasHF);
     
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kMissingEt, ETmissEt, ETmissPhi));
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kAsymEt, ETmissASYMET));
+    sum = l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kMissingEt, ETmissEt, ETmissPhi);
+    etSums->push_back(bx, sum);
+    sum = l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kAsymEt, ETmissASYMET);
+    etSums->push_back(bx, sum);
     
 
     // HTMiss
@@ -242,8 +260,10 @@ void ScCaloRawToDigi::unpackOrbit(
     HTmissASYMHT    = ((bl->sum[3] >> demux::shiftsESums::HTmissASYMHT)    & demux::masksESums::HTmissASYMHT);
     //HTmissMinBiasHF = ((bl->sum[3] >> demux::shiftsESums::HTmissMinBiasHF) & demux::masksESums::HTmissMinBiasHF);
 
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kMissingHt, HTmissEt, HTmissPhi));
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kAsymHt, HTmissASYMHT));
+    sum = l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kMissingHt, HTmissEt, HTmissPhi);
+    etSums->push_back(bx, sum);
+    sum = l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kAsymHt, HTmissASYMHT);
+    etSums->push_back(bx, sum);
 
     // ETHFMiss
     ETHFmissEt       = ((bl->sum[4] >> demux::shiftsESums::ETHFmissEt)       & demux::masksESums::ETHFmissEt);
@@ -251,8 +271,10 @@ void ScCaloRawToDigi::unpackOrbit(
     ETHFmissASYMETHF = ((bl->sum[4] >> demux::shiftsESums::ETHFmissASYMETHF) & demux::masksESums::ETHFmissASYMETHF);
     //ETHFmissCENT     = ((bl.sum[4] >> demux::shiftsESums::ETHFmissCENT)     & demux::masksESums::ETHFmissCENT);
     
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kMissingEtHF, ETHFmissEt, ETHFmissPhi));
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kAsymEtHF, ETHFmissASYMETHF));
+    sum = l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kMissingEtHF, ETHFmissEt, ETHFmissPhi);
+    etSums->push_back(bx, sum);
+    sum =  l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kAsymEtHF, ETHFmissASYMETHF);
+    etSums->push_back(bx, sum);
 
    
     // HTHFMiss
@@ -261,13 +283,20 @@ void ScCaloRawToDigi::unpackOrbit(
     HTHFmissASYMHTHF = ((bl->sum[5] >> demux::shiftsESums::HTHFmissASYMHTHF) & demux::masksESums::HTHFmissASYMHTHF);
     //HTHFmissCENT     = ((bl->sum[5] >> demux::shiftsESums::HTHFmissCENT)     & demux::masksESums::HTHFmissCENT);
 
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kMissingHtHF, HTHFmissEt, HTHFmissPhi));
-    etSums->push_back(bx, l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kAsymHtHF, HTHFmissASYMHTHF));
+    sum = l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kMissingHtHF, HTHFmissEt, HTHFmissPhi);
+    etSums->push_back(bx, sum);
+    sum =  l1t::EtSum(*dummyLVec_, l1t::EtSum::EtSumType::kAsymHtHF, HTHFmissASYMHTHF);
+    etSums->push_back(bx, sum);
 
     // add sums to event
     // etSums->push_back(bx, bx_etSums);
 
   } // end of orbit loop
+
+  jets->flatten();
+  eGammas->flatten();
+  taus->flatten();
+  etSums->flatten();
   
 }
 
