@@ -27,7 +27,6 @@ namespace scoutingRun3 {
       }
 
       void flatten() {
-        flatData_ = bxData_;
         index_.reserve(3565);
         flatData_.reserve(nObjects_);
         index_[0] = 0;

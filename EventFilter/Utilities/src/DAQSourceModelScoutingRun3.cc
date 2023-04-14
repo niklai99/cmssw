@@ -21,9 +21,15 @@ std::pair<bool, std::vector<std::string>> DataModeScoutingRun3::defineAdditional
   auto fullpath = std::filesystem::path(primaryName);
   auto fullname = fullpath.filename();
 
-  for (size_t i = 1; i < buPaths_.size(); i++) {
+  for (size_t i = 0; i < buPaths_.size(); i++) {
     std::filesystem::path newPath = buPaths_[i] / fullname;
-    additionalFiles.push_back(newPath.generic_string());
+    //additionalFiles.push_back(newPath.generic_string());
+    
+    // test: one extra source expected
+    for (size_t j=1; j<2; j++){
+    	additionalFiles.push_back(newPath.generic_string()+"_"+std::to_string(j));
+	    std::cout << "\n\n"<<newPath.generic_string()+"_"+std::to_string(j)<<"\n\n"<<std::endl;
+    }
   }
   return std::make_pair(true, additionalFiles);
 }

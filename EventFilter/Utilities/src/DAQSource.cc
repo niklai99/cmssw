@@ -1201,7 +1201,6 @@ void DAQSource::readWorker(unsigned int tid) {
         fileDescriptor = -1;
       } else
         assert(fileDescriptor == -1);
-
       if (fitToBuffer && bufferLeft != file->diskFileSizes_[0]) {
         edm::LogError("DAQSource") << "mismatch between read file size for file -: " << file->fileNames_[0]
                                    << " read:" << bufferLeft << " expected:" << file->diskFileSizes_[0];
