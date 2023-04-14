@@ -1,11 +1,16 @@
 #include "EventFilter//Utilities/interface/DAQSourceModelsScoutingRun3.h"
 
-void DataModeScoutingRun3::makeDirectoryEntries(std::vector<std::string> const& baseDirs, std::string const& runDir) {
+void DataModeScoutingRun3::makeDirectoryEntries(std::vector<std::string> const& baseDirs,
+                                                std::vector<int> const& numSources,
+                                                std::string const& runDir) {
   std::filesystem::path runDirP(runDir);
   for (auto& baseDir : baseDirs) {
     std::filesystem::path baseDirP(baseDir);
     buPaths_.emplace_back(baseDirP / runDirP);
   }
+
+  // store the number of sources in each BU
+  buNumSources_ = numSources;
 }
 
 std::pair<bool, std::vector<std::string>> DataModeScoutingRun3::defineAdditionalFiles(std::string const& primaryName,
@@ -23,12 +28,15 @@ std::pair<bool, std::vector<std::string>> DataModeScoutingRun3::defineAdditional
 
   for (size_t i = 0; i < buPaths_.size(); i++) {
     std::filesystem::path newPath = buPaths_[i] / fullname;
-    //additionalFiles.push_back(newPath.generic_string());
+
+    if (i!=0){
+      // secondary files from other ramdisks
+      additionalFiles.push_back(newPath.generic_string());
+    }
     
-    // test: one extra source expected
-    for (size_t j=1; j<2; j++){
+    // add extra sources from the same ramdisk
+    for (int j=1; j<buNumSources_[i]; j++){
     	additionalFiles.push_back(newPath.generic_string()+"_"+std::to_string(j));
-	    std::cout << "\n\n"<<newPath.generic_string()+"_"+std::to_string(j)<<"\n\n"<<std::endl;
     }
   }
   return std::make_pair(true, additionalFiles);

@@ -103,7 +103,9 @@ DAQSource::DAQSource(edm::ParameterSet const& pset, edm::InputSourceDescription 
     }
   }
 
-  dataMode_->makeDirectoryEntries(daqDirector_->getBUBaseDirs(), daqDirector_->runString());
+  dataMode_->makeDirectoryEntries(daqDirector_->getBUBaseDirs(),
+                                  daqDirector_->getBUBaseDirsNSources(),
+                                  daqDirector_->runString());
 
   auto& daqProvenanceHelpers = dataMode_->makeDaqProvenanceHelpers();
   for (const auto& daqProvenanceHelper : daqProvenanceHelpers)

@@ -130,7 +130,9 @@ public:
 
   void setTCDSSearchRange(uint16_t MINTCDSuTCAFEDID, uint16_t MAXTCDSuTCAFEDID) override { return; }
 
-  void makeDirectoryEntries(std::vector<std::string> const& baseDirs, std::string const& runDir) override {}
+  void makeDirectoryEntries(std::vector<std::string> const& baseDirs,
+                            std::vector<int> const& numSources,
+                            std::string const& runDir) override {}
 
   std::pair<bool, std::vector<std::string>> defineAdditionalFiles(std::string const& primaryName, bool) const override {
     return std::make_pair(true, std::vector<std::string>());
@@ -233,7 +235,9 @@ public:
 
   void setTCDSSearchRange(uint16_t MINTCDSuTCAFEDID, uint16_t MAXTCDSuTCAFEDID) override { return; }
 
-  void makeDirectoryEntries(std::vector<std::string> const& baseDirs, std::string const& runDir) override {
+  void makeDirectoryEntries(std::vector<std::string> const& baseDirs,
+                            std::vector<int> const& numSources,
+                            std::string const& runDir) override {
     //receive directory paths for multiple input files ('striped')
   }
 

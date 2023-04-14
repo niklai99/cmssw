@@ -104,7 +104,9 @@ public:
 
   void setTCDSSearchRange(uint16_t MINTCDSuTCAFEDID, uint16_t MAXTCDSuTCAFEDID) override { return; }
 
-  void makeDirectoryEntries(std::vector<std::string> const& baseDirs, std::string const& runDir) override;
+  void makeDirectoryEntries(std::vector<std::string> const& baseDirs,
+                            std::vector<int> const& numSources,
+                            std::string const& runDir) override;
 
   std::pair<bool, std::vector<std::string>> defineAdditionalFiles(std::string const& primaryName,
                                                                   bool fileListMode) const override;
@@ -125,6 +127,7 @@ private:
   bool blockCompleted_ = true;
   bool eventCached_ = false;
   std::vector<std::filesystem::path> buPaths_;
+  std::vector<int> buNumSources_;
 
   // keep track of valid (=aligned) orbits from different data sources
   std::vector<bool> validOrbits_;
