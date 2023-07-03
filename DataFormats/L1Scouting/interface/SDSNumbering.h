@@ -14,9 +14,11 @@ class SDSNumbering {
 
     enum {
       NOT_A_SDSID = -1,
-      MAXSDSID = 1,
-      GmtSDSID = 0,
-      CaloSDSID = 1
+      MAXSDSID = 128,
+      GmtSDSID = 0x1,
+      CaloSDSID = 0x2,
+      GtSDSID = 0x4
+    };
     };
 };
 
