@@ -19,7 +19,6 @@ class SDSNumbering {
       CaloSDSID = 0x2,
       GtSDSID = 0x4
     };
-    };
 };
 
 #endif // L1Scouting_SDSNumbering_h
