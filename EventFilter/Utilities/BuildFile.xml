@@ -10,6 +10,7 @@
 <use name="FWCore/Sources"/>
 <use name="IOPool/Streamer"/>
 <use name="DataFormats/L1Trigger"/>
+<use name="DataFormats/L1TMuon"/>
 <export>
   <lib name="1"/>
 </export>

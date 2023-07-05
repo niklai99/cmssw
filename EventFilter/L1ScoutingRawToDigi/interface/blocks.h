@@ -86,7 +86,7 @@ namespace demux {
         uint32_t orbit;
         uint32_t frame[56];     // +8 for extra word containing link number
     };
-    
+
     // unrolled frame block
     struct block {
           uint32_t header;
@@ -109,6 +109,14 @@ namespace demux {
           uint32_t link7;
           uint32_t tau2[6];
       };
+}
+
+
+
+namespace bmtf {
+    struct block {
+        uint64_t stub[8];
+    };
 }
 
 }

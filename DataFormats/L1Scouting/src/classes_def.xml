@@ -5,7 +5,7 @@
   <class name="scoutingRun3::MuonOrbitCollection">
     <field name="bxData_" transient="true"/>
   </class>
-  <ioread 
+  <ioread
       sourceClass = "scoutingRun3::MuonOrbitCollection"
       version="[1-]"
       targetClass="scoutingRun3::MuonOrbitCollection"
@@ -18,7 +18,7 @@
   <class name="scoutingRun3::JetOrbitCollection">
     <field name="bxData_" transient="true"/>
   </class>
-  <ioread 
+  <ioread
       sourceClass = "scoutingRun3::JetOrbitCollection"
       version="[1-]"
       targetClass="scoutingRun3::JetOrbitCollection"
@@ -31,7 +31,7 @@
   <class name="scoutingRun3::EGammaOrbitCollection">
     <field name="bxData_" transient="true"/>
   </class>
-  <ioread 
+  <ioread
       sourceClass = "scoutingRun3::EGammaOrbitCollection"
       version="[1-]"
       targetClass="scoutingRun3::EGammaOrbitCollection"
@@ -44,7 +44,7 @@
   <class name="scoutingRun3::TauOrbitCollection">
     <field name="bxData_" transient="true"/>
   </class>
-  <ioread 
+  <ioread
       sourceClass = "scoutingRun3::TauOrbitCollection"
       version="[1-]"
       targetClass="scoutingRun3::TauOrbitCollection"
@@ -57,7 +57,7 @@
   <class name="scoutingRun3::EtSumOrbitCollection">
     <field name="bxData_" transient="true"/>
   </class>
-  <ioread 
+  <ioread
       sourceClass = "scoutingRun3::EtSumOrbitCollection"
       version="[1-]"
       targetClass="scoutingRun3::EtSumOrbitCollection"
@@ -67,4 +67,17 @@
       ]]>
   </ioread>
   <class name="edm::Wrapper<scoutingRun3::EtSumOrbitCollection>"/>
+  <class name="scoutingRun3::BmtfStubOrbitCollection">
+    <field name="bxData_" transient="true"/>
+  </class>
+  <ioread
+      sourceClass = "scoutingRun3::BmtfStubOrbitCollection"
+      version="[1-]"
+      targetClass="scoutingRun3::BmtfStubOrbitCollection"
+      source=""
+      target="bxData_">
+      <![CDATA[ bxData_ = std::vector<std::vector<L1MuKBMTCombinedStub>>();
+      ]]>
+  </ioread>
+  <class name="edm::Wrapper<scoutingRun3::BmtfStubOrbitCollection>"/>
 </lcgdict>

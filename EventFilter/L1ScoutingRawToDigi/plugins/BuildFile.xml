@@ -6,5 +6,6 @@
   <use name="DataFormats/FEDRawData"/>
   <use name="DataFormats/L1Scouting"/>
   <use name="DataFormats/L1Trigger"/>
+  <use name="DataFormats/L1TMuon"/>
   <flags EDM_PLUGIN="1"/>
 </library>

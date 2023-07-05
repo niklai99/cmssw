@@ -29,7 +29,9 @@ public:
   L1MuKBMTrackCollection clean(const L1MuKBMTrackCollection&, uint);
 
   void addBMTFMuon(int, const L1MuKBMTrack&, std::unique_ptr<l1t::RegionalMuonCandBxCollection>&);
+  void addBMTFMuonNoTrunc(int, const L1MuKBMTrack&, std::unique_ptr<l1t::RegionalMuonCandBxCollection>&);
   l1t::RegionalMuonCand convertToBMTF(const L1MuKBMTrack& track);
+  l1t::RegionalMuonCand convertToBMTFnoTrunc(const L1MuKBMTrack& track);
 
 private:
   bool verbose_;

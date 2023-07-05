@@ -130,10 +130,78 @@ l1t::RegionalMuonCand L1TMuonBarrelKalmanAlgo::convertToBMTF(const L1MuKBMTrack&
   return muon;
 }
 
+l1t::RegionalMuonCand L1TMuonBarrelKalmanAlgo::convertToBMTFnoTrunc(const L1MuKBMTrack& track) {
+  //  int  K = fabs(track.curvatureAtVertex());
+
+  //calibration
+  int sign, signValid;
+
+  if (track.curvatureAtVertex() == 0) {
+    sign = 0;
+    signValid = 0;
+  } else if (track.curvatureAtVertex() > 0) {
+    sign = 0;
+    signValid = 1;
+  } else {
+    sign = 1;
+    signValid = 1;
+  }
+
+  // if (K<22)
+  //   K=22;
+
+  // if (K>4095)
+  //   K=4095;
+
+  int pt = ptLUT(track.curvatureAtVertex());
+
+  // int  K2 = fabs(track.curvatureAtMuon());
+  // if (K2<22)
+  //   K2=22;
+
+  // if (K2>4095)
+  //   K2=4095;
+  int pt2 = ptLUT(track.curvatureAtMuon()) / 2;
+  int eta = track.hasFineEta() ? track.fineEta() : track.coarseEta();
+
+  //  int phi2 = track.phiAtMuon()>>2;
+  //  float phi_f = float(phi2);
+  //double kPhi = 57.2958/0.625/1024.;
+  //int phi = 24+int(floor(kPhi*phi_f));
+  //  if (phi >  69) phi =  69;
+  //  if (phi < -8) phi = -8;
+  int phi2 = track.phiAtMuon();
+  int tmp = fp_product(0.0895386, phi2, 16);
+  int phi = 24 + tmp;
+
+  int processor = track.sector();
+  int HF = track.hasFineEta();
+
+  int quality = 12 | (rank(track) >> 6);
+
+  int dxy = abs(track.dxy());
+
+  int trackAddr;
+  std::map<int, int> addr = trackAddress(track, trackAddr);
+
+  l1t::RegionalMuonCand muon(pt, phi, eta, sign, signValid, quality, processor, l1t::bmtf, addr);
+  muon.setHwHF(HF);
+  muon.setHwPtUnconstrained(pt2);
+  muon.setHwDXY(dxy);
+
+  return muon;
+}
+
 void L1TMuonBarrelKalmanAlgo::addBMTFMuon(int bx,
                                           const L1MuKBMTrack& track,
                                           std::unique_ptr<l1t::RegionalMuonCandBxCollection>& out) {
   out->push_back(bx, convertToBMTF(track));
+}
+
+void L1TMuonBarrelKalmanAlgo::addBMTFMuonNoTrunc(int bx,
+                                                 const L1MuKBMTrack& track,
+                                                 std::unique_ptr<l1t::RegionalMuonCandBxCollection>& out) {
+  out->push_back(bx, convertToBMTFnoTrunc(track));
 }
 
 // std::pair<bool,uint> L1TMuonBarrelKalmanAlgo::match(const L1MuKBMTCombinedStubRef& seed, const L1MuKBMTCombinedStubRefVector& stubs,int step) {
