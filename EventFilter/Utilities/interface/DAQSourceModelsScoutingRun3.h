@@ -50,10 +50,9 @@ public:
     numFiles_ = fileSizes.size();
     
     // initalize vectors keeping tracks of valid orbits and completed blocks
-    validOrbits_.clear();
+    sourceValidOrbitPair_.clear();
     completedBlocks_.clear();
     for (unsigned int i=0; i<fileSizes.size(); i++){
-      validOrbits_.push_back(true);
       completedBlocks_.push_back(false);
     }
 
@@ -130,7 +129,7 @@ private:
   std::vector<int> buNumSources_;
 
   // keep track of valid (=aligned) orbits from different data sources
-  std::vector<bool> validOrbits_;
+  std::vector<std::pair<int, int>> sourceValidOrbitPair_;
   unsigned int currOrbit = 0xFFFFFFFF;
 
   std::vector<bool> completedBlocks_;

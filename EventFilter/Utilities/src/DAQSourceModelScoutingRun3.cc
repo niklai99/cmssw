@@ -19,7 +19,9 @@ std::pair<bool, std::vector<std::string>> DataModeScoutingRun3::defineAdditional
 
   if (fileListMode) {
     //for the unit test
-    additionalFiles.push_back(primaryName + "_1");
+    for (int j=1; j<buNumSources_[0]; j++){
+	additionalFiles.push_back(primaryName+"_"+std::to_string(j));
+    }
     return std::make_pair(true, additionalFiles);
   }
 
@@ -63,9 +65,8 @@ void DataModeScoutingRun3::readEvent(edm::EventPrincipal& eventPrincipal) {
   // create scouting raw data collection
   std::unique_ptr<SRDCollection> rawData(new SRDCollection);
 
-  // loop over selected sources
-  for(auto const& event: events_) {
-    fillSRDCollection(*rawData, (char*)event->payload(), event->eventSize());
+  for (const auto& pair: sourceValidOrbitPair_){
+    fillSRDCollection(*rawData, (char*)events_[pair.second]->payload(), events_[pair.second]->eventSize());
   }  
 
   std::unique_ptr<edm::WrapperBase> edp(new edm::Wrapper<SRDCollection>(std::move(rawData)));
@@ -118,14 +119,8 @@ bool DataModeScoutingRun3::nextEventView() {
   if (eventCached_)
     return true;
 
-  int evt_idx = 0;
-  for (int i = 0; i < numFiles_; i++){
-    // add last event length if it was a valid orbit
-    // i.e. it has been processed
-    if (validOrbits_[i]){
-      dataBlockAddrs_[i] += events_[evt_idx]->size();
-      evt_idx++;
-    }
+  for (const auto& pair: sourceValidOrbitPair_){
+    dataBlockAddrs_[pair.first] += events_[pair.second]->size();
   }
 
   return makeEvents();
@@ -134,6 +129,7 @@ bool DataModeScoutingRun3::nextEventView() {
 bool DataModeScoutingRun3::makeEvents() {
   // clear events and reset current orbit
   events_.clear();
+  sourceValidOrbitPair_.clear();
   currOrbit = 0xFFFFFFFF; // max uint
   assert(!blockCompleted_);
 
@@ -150,7 +146,7 @@ bool DataModeScoutingRun3::makeEvents() {
       throw cms::Exception("DAQSource::getNextEvent")
           << " event id:" << events_.back()->event() << " lumi:" << events_.back()->lumi() << " run:" << events_.back()->run()
           << " of size:" << events_.back()->size() << " bytes does not fit into the buffer or has corrupted header";
-    
+   
     // find the min orbit for the current event
     if ((events_.back()->event()<currOrbit) && (!completedBlocks_[i])){
       currOrbit = events_.back()->event();
@@ -163,14 +159,12 @@ bool DataModeScoutingRun3::makeEvents() {
   int evt_idx = 0;
   for (int i=0; i < numFiles_; i++){
     if (completedBlocks_[i]) {
-      validOrbits_[i] = false;
       continue;
     }
 
     if(events_[evt_idx]->event() != currOrbit){
-      validOrbits_[i] = false;
     } else {
-      validOrbits_[i] = true;
+      sourceValidOrbitPair_.emplace_back(std::make_pair(i, evt_idx));
       allBlocksCompleted = false;
     }
 
