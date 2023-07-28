@@ -6,7 +6,7 @@ import os
 options = VarParsing.VarParsing ('analysis')
 
 options.register ('runNumber',
-                  368318, # default value
+                  370169, # default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.int,          # string, int, or float
                   "Run Number")
@@ -24,7 +24,7 @@ options.register ('buBaseDir',
                   "BU base directory")
 
 options.register ('fuBaseDir',
-                  '.', # default value
+                  '/tmp/', # default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.string,          # string, int, or float
                   "BU base directory")
@@ -36,13 +36,13 @@ options.register ('fffBaseDir',
                   "FFF base directory")
 
 options.register ('numThreads',
-                  2, # default value
+                  20, # default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.int,          # string, int, or float
                   "Number of CMSSW threads")
 
 options.register ('numFwkStreams',
-                  1, # default value
+                  20, # default value
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.int,          # string, int, or float
                   "Number of CMSSW streams")
@@ -78,6 +78,12 @@ process.Timing = cms.Service("Timing",
 
 process.EvFDaqDirector = cms.Service("EvFDaqDirector",
     useFileBroker = cms.untracked.bool(False),
+    buBaseDirsAll = cms.untracked.vstring(
+        "tmp"
+    ),
+    buBaseDirsNumStreams = cms.untracked.vint32(
+        13
+    ),
     fileBrokerHostFromCfg = cms.untracked.bool(True),
     fileBrokerHost = cms.untracked.string("htcp40.cern.ch"),
     runNumber = cms.untracked.uint32(options.runNumber),
@@ -106,7 +112,7 @@ process.source = cms.Source("DAQSource",
     maxBufferedFiles = cms.untracked.uint32(2),
     fileListMode = cms.untracked.bool(True),
     fileNames = cms.untracked.vstring(
-        ram_dir_path + "run" + str(options.runNumber) + "_ls0150_index000000.raw"
+        ram_dir_path + "run" + str(options.runNumber) + "_ls" + str(ls).zfill(4) + "_index" + str(idx).zfill(6) + ".raw" for ls in range(550,557+1) for idx in range(0,64) if (idx!=(ls-550+29))
     )
 
 )
@@ -114,7 +120,7 @@ process.source = cms.Source("DAQSource",
 ## test pluging
 process.GmtUnpacker = cms.EDProducer('ScGMTRawToDigi',
   srcInputTag = cms.InputTag('rawDataCollector'),
-  debug=cms.untracked.bool(True)
+  debug=cms.untracked.bool(False)
 )
 process.CaloUnpacker = cms.EDProducer('ScCaloRawToDigi',
   srcInputTag = cms.InputTag('rawDataCollector'),
@@ -122,31 +128,30 @@ process.CaloUnpacker = cms.EDProducer('ScCaloRawToDigi',
 )
 process.BmtfUnpacker = cms.EDProducer('ScBMTFRawToDigi',
   srcInputTag = cms.InputTag('rawDataCollector'),
-  debug=cms.untracked.bool(True),
+  debug=cms.untracked.bool(False),
   cotTheta_1=cms.vint32(105,101,97,93,88,84,79,69,64,58,52,46,40,34,21,14,7,0,-7,-14,-21,-34,-40,-46,-52,-58,-64,-69,-79,-84,-88,-93,-97,-101,-105),
   cotTheta_2=cms.vint32(93,89,85,81,77,73,68,60,55,50,45,40,34,29,17,12,6,0,-6,-12,-17,-29,-34,-40,-45,-50,-55,-60,-68,-73,-77,-81,-85,-89,-93),
   cotTheta_3=cms.vint32(81,77,74,70,66,62,58,51,46,42,38,33,29,24,15,10,5,0,-5,-10,-15,-24,-29,-33,-38,-42,-46,-51,-58,-62,-66,-70,-74,-77,-81),
 )
 
 process.output = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('file:./PoolOutputTest.root'),
+    fileName = cms.untracked.string('file:./kBMTFGMTdata.root'),
     outputCommands = cms.untracked.vstring(
         "keep *",
-        "keep *_rawDataCollector_*_*",
-        # "keep *_GmtUnpacker_*_*",
+        "drop *_rawDataCollector_*_*",
+        "keep *_GmtUnpacker_*_*",
         # "keep *_CaloUnpacker_*_*",
-        "keep *_BmtfUnpacker_*_*"
+        "keep *_*_BMTF_*"
         ),
     #compressionLevel = cms.untracked.int32(1)
     )
 
 rawToDigiTask = cms.Task(
-  # process.GmtUnpacker,
+  process.GmtUnpacker,
   # process.CaloUnpacker,
   process.BmtfUnpacker
 )
 
-"""
 bmtfKalmanTrackingSettings = cms.PSet(
     verbose = cms.bool(False),  #
     lutFile = cms.string("L1Trigger/L1TMuon/data/bmtf_luts/kalmanLUTs_v302.root"),
@@ -198,13 +203,14 @@ bmtfKalmanTrackingSettings = cms.PSet(
 
 
 
-process.simKBmtfDigis = cms.EDProducer("L1TMuonBarrelKalmanTrackProducer",
+process.simKBmtfDigis = cms.EDProducer("L1TMuonBarrelScoutingKalmanTrackProducer",
     src = cms.InputTag("BmtfUnpacker"),
-    bx = cms.vint32(-2,-1,0,1,2),
+    bxMin = cms.int32(0),
+    bxMax = cms.int32(3564),
 #    bx = cms.vint32(0),
     algoSettings = bmtfKalmanTrackingSettings,
     trackFinderSettings = cms.PSet(
-        sectorsToProcess = cms.vint32(0,1,2,3),
+        sectorsToProcess = cms.vint32(0,1,2,3,4,5,6,7,8,9,10,11),
         verbose = cms.int32(0),
         sectorSettings = cms.PSet(
 #            verbose = cms.int32(1),
@@ -214,15 +220,14 @@ process.simKBmtfDigis = cms.EDProducer("L1TMuonBarrelKalmanTrackProducer",
                 verbose=cms.int32(0)
             )
         )
-
-    )
+    ),
+    debug = cms.bool(False)
 )
-"""
 
 
 process.p1 = cms.Path(rawToDigiTask)
 #process.p = cms.Path(process.GmtUnpacker*process.CaloUnpacker)
-# process.p2 = cms.Path(process.simKBmtfDigis)
+process.p2 = cms.Path(process.simKBmtfDigis)
 
 process.ep = cms.EndPath(
     process.output

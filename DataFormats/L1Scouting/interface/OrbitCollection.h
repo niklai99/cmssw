@@ -20,7 +20,7 @@ namespace scoutingRun3 {
   class OrbitCollection {
 
     public:
-      OrbitCollection(): bxData_(3565), nObjects_(0) {}
+      OrbitCollection(): bxIndex_(3565,0), bxData_(3565), nObjects_(0) {}
 
       void push_back(int bx, T &object) {
           bxData_[bx].push_back(object);
@@ -28,21 +28,21 @@ namespace scoutingRun3 {
       }
 
       void flatten() {
-        index_.reserve(3565);
         flatData_.reserve(nObjects_);
-        index_[0] = 0;
+        bxIndex_[0] = 0;
         int idx = 1;
         for (auto &bxVec: bxData_) {
             flatData_.insert(flatData_.end(), bxVec.begin(), bxVec.end());
             // increase index position
-            index_[idx] = index_[idx-1] + bxVec.size();
+            bxIndex_[idx] = bxIndex_[idx-1] + bxVec.size();
             idx++;
         }
         //bxData_.clear();
       }
 
-      const std::vector<int>* getIndex() const { return &index_; }
-      int getIndex(int i) const { return index_[i]; }
+
+      const std::vector<int>* getIndex() const { return &bxIndex_; }
+      int getIndex(int i) const { return bxIndex_[i]; }
 
       const std::vector<T>* getFlatData() const { return &flatData_; }
       const T* getFlatData(int i) const { return &(flatData_[i]); }
@@ -50,11 +50,13 @@ namespace scoutingRun3 {
       const std::vector<std::vector<T>>* getBxData() const { return &bxData_; }
       const std::vector<T>* getBxData(int i) const { return &(bxData_[i]); }
 
+      int sizeIndex()    const { return bxIndex_.size(); }
       int sizeFlatData() const { return flatData_.size(); }
-      int sizeBxData() const { return bxData_.size(); }
+      int sizeBxData()   const { return bxData_.size(); }
+
 
     private:
-      std::vector<int> index_;
+      std::vector<int> bxIndex_;
       std::vector<T> flatData_;
       mutable std::vector<std::vector<T>> bxData_;
       int nObjects_;

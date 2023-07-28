@@ -170,8 +170,8 @@ l1t::RegionalMuonCand L1TMuonBarrelKalmanAlgo::convertToBMTFnoTrunc(const L1MuKB
   //int phi = 24+int(floor(kPhi*phi_f));
   //  if (phi >  69) phi =  69;
   //  if (phi < -8) phi = -8;
-  int phi2 = track.phiAtMuon();
-  int tmp = fp_product(0.0895386, phi2, 16);
+  int phi2 = track.phiAtMuon() >> 2;
+  int tmp = fp_product(0.0895386, phi2, 14);
   int phi = 24 + tmp;
 
   int processor = track.sector();

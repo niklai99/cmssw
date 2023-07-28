@@ -34,7 +34,7 @@ void ScBMTFRawToDigi::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::unique_ptr<scoutingRun3::BmtfStubOrbitCollection> unpackedStubs(new scoutingRun3::BmtfStubOrbitCollection);
 
   // loop over all Scouting Data Source IDs
-  for (unsigned int i=SDSNumbering::BmtfMinSDSID; i<SDSNumbering::BmtfMaxSDSID; i++) {
+  for (unsigned int i=SDSNumbering::BmtfMinSDSID; i<=SDSNumbering::BmtfMaxSDSID; i++) {
     // get data and orbit size from i^th source
     const FEDRawData& sourceRawData = ScoutingRawDataCollection->FEDData(i);
     size_t orbitSize = sourceRawData.size();

@@ -44,7 +44,7 @@ L1TMuonBarrelScoutingKalmanTrackProducer::L1TMuonBarrelScoutingKalmanTrackProduc
       algo_(new L1TMuonBarrelKalmanAlgo(iConfig.getParameter<edm::ParameterSet>("algoSettings"))),
       trackFinder_(new L1TMuonBarrelKalmanTrackFinder(iConfig.getParameter<edm::ParameterSet>("trackFinderSettings"))),
       debug_(iConfig.getParameter<bool>("debug")) {
-  produces<L1MuKBMTrackBxCollection>("KBMTF");
+  // produces<L1MuKBMTrackBxCollection>("KBMTF");
   produces<l1t::RegionalMuonCandBxCollection>("BMTF");
 }
 
@@ -90,9 +90,9 @@ void L1TMuonBarrelScoutingKalmanTrackProducer::produce(edm::Event& iEvent, const
   }
 
   std::unique_ptr<l1t::RegionalMuonCandBxCollection> outBMTF(new l1t::RegionalMuonCandBxCollection());
-  std::unique_ptr<L1MuKBMTrackBxCollection> out(new L1MuKBMTrackBxCollection());
+  // std::unique_ptr<L1MuKBMTrackBxCollection> out(new L1MuKBMTrackBxCollection());
   outBMTF->setBXRange(bxMin_, bxMax_);
-  out->setBXRange(bxMin_, bxMax_);
+  // out->setBXRange(bxMin_, bxMax_);
 
   std::sort(seenBxs.begin(), seenBxs.end());
   seenBxs.erase(std::unique(seenBxs.begin(), seenBxs.end()), seenBxs.end());
@@ -103,7 +103,7 @@ void L1TMuonBarrelScoutingKalmanTrackProducer::produce(edm::Event& iEvent, const
       std::cout << "KBMTF: seen BX: " << bx << std::endl;
 
     for (const auto& track : tmp) {
-      out->push_back(bx, track);
+      // out->push_back(bx, track);
       algo_->addBMTFMuonNoTrunc(bx, track, outBMTF);
       if (debug_)
         std::cout << "KBMTF: candidate muon found and added" << std::endl;
@@ -114,7 +114,7 @@ void L1TMuonBarrelScoutingKalmanTrackProducer::produce(edm::Event& iEvent, const
     std::cout << "KBMTF: event processed" << std::endl;
 
   iEvent.put(std::move(outBMTF), "BMTF");
-  iEvent.put(std::move(out), "KBMTF");
+  // iEvent.put(std::move(out), "KBMTF");
 }
 
 // ------------ method called once each stream before processing any runs, lumis or events  ------------
