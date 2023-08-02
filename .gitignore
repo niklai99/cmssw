@@ -21,3 +21,6 @@ plots/
 *.ipynb
 *.csv
 .vscode/
+
+EventFilter/Utilities/plugins/kBmtfMuonStubs.cc
+EventFilter/Utilities/test/kBmtfMuonStubs.py

@@ -43,18 +43,6 @@
 #include "TBranch.h"
 // #include "TDirectory.h"
 
-/*
-    -   deltaR è sempre zero nei dataframes sia per i matched sia per gli unmatched
-    -   deltaEta e deltaPhi sembrano normali invece, ci può essere un errore del calcolo di deltaR
-        oppure un errore dello storage dei dati
-    -   molto probabilmente è un problema di come salvo i dati perchè le branch sono collegate a dr_
-        mentre con la nuova logica costruisco strutture più complesse
-    -   ha senso che il 94.4% di muoni del BMTF abbiano un match con il GMT?
-    -   ha senso che il 81.5% di muoni del GMT abbiano un match con il BMTF?
-*/
-
-
-
 
 
 // ----------------------------- CLASS DECLARATION  ----------------------------
