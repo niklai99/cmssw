@@ -156,7 +156,7 @@ void kBmtfMatchBmtf::analyze(const edm::Event& iEvent, const edm::EventSetup& ev
     iEvent.getByToken(bmtfMuonToken_, bmtfMuonHandle);
 
     // update the orbit number
-    orbitNum_++;
+    orbitNum_ = iEvent.id().event();
 
     // loop over the BXs
     for (int bx = minBx_; bx < maxBx_; ++bx) {
@@ -253,9 +253,6 @@ void kBmtfMatchBmtf::matchBmtfMuons(const edm::Handle<l1t::RegionalMuonCandBxCol
 
 // method to initialize the muon matching
 void kBmtfMatchBmtf::initMatchMuons() {
-
-    // initialize the orbit number
-    orbitNum_ = 0;
 
 
     bmtfMatchedMuonsTree_   = fs->make<TTree>("bmtfMatchedMuons", "bmtfMatchedMuons");

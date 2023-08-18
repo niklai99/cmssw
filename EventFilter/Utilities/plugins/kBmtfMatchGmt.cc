@@ -180,7 +180,7 @@ void kBmtfMatchGmt::analyze(const edm::Event& iEvent, const edm::EventSetup& evS
     iEvent.getByToken(gmtMuonToken_, gmtMuonHandle);
 
     // update the orbit number
-    orbitNum_++;
+    orbitNum_ = iEvent.id().event();
 
     // loop over the BXs
     for (int bx = minBx_; bx < maxBx_; ++bx) {
@@ -335,10 +335,6 @@ void kBmtfMatchGmt::matchGmtOnBmtf(const edm::Handle<l1t::RegionalMuonCandBxColl
 
 // method to initialize the muon matching
 void kBmtfMatchGmt::initMatchMuons() {
-
-    // initialize the orbit number
-    orbitNum_ = 0;
-
 
     // BMTF ON GMT
 

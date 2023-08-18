@@ -199,7 +199,7 @@ void kBmtfReadFromRaw::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     iEvent.getByToken(gmtMuonToken_, gmtMuonHandle);
 
     // update the orbit number
-    orbitNum_++;
+    orbitNum_ = iEvent.id().event();
 
     // loop over the BXs
     for (int bx = minBx_; bx < maxBx_; ++bx) {
@@ -409,9 +409,6 @@ bool kBmtfReadFromRaw::processGmtMuons(const edm::Handle<scoutingRun3::MuonOrbit
 // method to initialize the data collection
 void kBmtfReadFromRaw::initCollectData(bool collectStubs, bool collectBmtfMuons, bool collectGmtMuons) {
 
-    // initialize the orbit number
-    orbitNum_ = 0;
-
     if (collectStubs) {
         // initialize the histograms for the stubs
         h_stubOccupancyBX    = fs->make<TH1D>("h_stubOccupancyBX",    "h_stubOccupancyBX",    maxBx_ - minBx_, minBx_, maxBx_);
@@ -536,5 +533,3 @@ bool kBmtfReadFromRaw::isBarrel(const l1t::Muon* gmtMuon) const {
 
 
 DEFINE_FWK_MODULE(kBmtfReadFromRaw);
-
-
