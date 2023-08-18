@@ -1,5 +1,11 @@
 <library file="*.cc" name="EventFilterUtilitiesPlugins">
   <use name="DataFormats/FEDRawData"/>
+  <use name="DataFormats/L1Trigger"/>
+  <use name="DataFormats/L1TMuon"/>
+  <use name="DataFormats/MuonReco"/>
+  <use name="CondFormats/DataRecord"/>
+  <use name="CondFormats/L1TObjects"/>
+  <use name="MuonAnalysis/MuonAssociators"/>
   <use name="EventFilter/Utilities"/>
   <use name="FWCore/Common"/>
   <use name="FWCore/Framework"/>
@@ -10,6 +16,7 @@
   <use name="FWCore/Utilities"/>
   <use name="IOPool/Streamer"/>
   <use name="PhysicsTools/UtilAlgos"/>
+  <use name="L1Trigger/L1TMuonBarrel"/>
   <use name="CLHEP"/>
   <use name="boost"/>
   <use name="root"/>
