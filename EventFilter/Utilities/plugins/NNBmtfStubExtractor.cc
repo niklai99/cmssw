@@ -182,11 +182,11 @@ NNBmtfStubExtractor::NNBmtfStubExtractor(const edm::ParameterSet& iConfig):
                      << "dXYReco,"
                      << "isTight,"
                      // L1 quantities
-                     << "hwPtL1,"
-                     << "hwPt2L1,"
+                     << "ptL1,"
+                     << "pt2L1,"
                      << "hwDXYL1,"
-                     << "hwPhiL1,"
-                     << "hwEtaL1,"
+                     << "phiL1,"
+                     << "etaL1,"
                      << "hwSignL1,"
                      << "hwSignValidL1,"
                      << "hwQualityL1,"
@@ -195,9 +195,11 @@ NNBmtfStubExtractor::NNBmtfStubExtractor(const edm::ParameterSet& iConfig):
                      //    << "phiAtVtx,"
                      //    << "etaAtVtx,"
                      //    << "tfMuonIndex,"
+                     // KBMTF quantities
                      << "kbmtfRVtx,kbmtfPhiVtx,kbmtfRMu,kbmtfPhiMu,kbmtfPhiBendMu,kbmtfFloatPTUnconstrained,kbmtfDXY,kbmtfApproxChi2,kbmtfCoarseEta,kbmtfRank,kbmtfFineEta,kbmtfHasFineEta,"
-                     << "kbmtfSector,kbmtfHitPattern,kbmtfQuality,kbmtfWheel,kbmtfStep,kbmtfGMTHwEtaAtVtx,kbmtfGMTHwPhiAtVtx,kbmtfGMTEtaAtVtx,kbmtfGMTPhiAtVtx,"
-                    //  << "kbmtfSector,kbmtfHitPattern,kbmtfQuality,kbmtfWheel,kbmtfStep,kbmtfGlobalPhiVtx,kbmtfGlobalPhiMu,kbmtfGMTHwEtaAtVtx,kbmtfGMTHwPhiAtVtx,kbmtfGMTEtaAtVtx,kbmtfGMTPhiAtVtx"
+                     << "kbmtfSector,kbmtfHitPattern,kbmtfQuality,kbmtfWheel,kbmtfStep,"
+                     // GMT quantities
+                     << "GmtHwEtaAtVtx,GmtHwPhiAtVtx,GmtEtaAtVtx,GmtPhiAtVtx,GmtPt,GmtPtU,GmtEta,GmtPhi,"
                      << "n_stubs,"
                      << "s1_stNum,s1_scNum,s1_whNum,s1_eta,s1_phi,s1_phiB,s1_quality,"
                      << "s2_stNum,s2_scNum,s2_whNum,s2_eta,s2_phi,s2_phiB,s2_quality,"
@@ -349,55 +351,62 @@ void NNBmtfStubExtractor::analyze(const edm::Event& iEvent, const edm::EventSetu
             const auto& l1tGmtMuon    = vGmtMuons[l1match_ll];
 
 
-            fileNNBmtfStubs_ << iEvent.id().run() << "," << iEvent.luminosityBlock() << "," << iEvent.id().event() << ","
-                             << recoMuon.pt() << "," // "ptReco,"
-                             << stateAtMuSt2.globalPosition().eta() << ","  // "etaExtRecoSt2,"
-                             << stateAtMuSt2.globalPosition().phi() << ","  // "phiExtRecoSt2,"
-                             << recoMuon.charge() << ","                    // "chargeReco,"
-                             << recoMuon.eta() << ","                       // "etaVtxReco,"
-                             << recoMuon.phi() << ","                       // "phiVtxReco,"
-                             << "-1" << ","                                 // "dXYReco,"
-                             << "1" << ","                                  // "isTight,"
-                             // L1 quantities
-                             << calcPtGeV(l1tRegMuon.hwPt()) << ","                    // "hwPtL1,"
-                             << calcPtGeV(l1tRegMuon.hwPtUnconstrained()) << ","       // "hwPt2L1,"
-                             << l1tRegMuon.hwDXY() << ","                   // "hwDXYL1,"
-                             << calcPhysPhi(calcGlobalPhi(l1tRegMuon)) << ","            // "hwPhiL1,"
-                             << calcPhysEta(l1tRegMuon.hwEta()) << ","                   // "hwEtaL1,"
-                             << l1tRegMuon.hwSign() << ","                  // "hwSignL1,"
-                             << l1tRegMuon.hwSignValid() << ","             // "hwSignValidL1,"
-                             << l1tRegMuon.hwQual() << ","                  // "hwQualityL1,"
-                             // KBMTF quantities
-                             << l1tKBmtfTrack.curvatureAtVertex() << ","
-                             << l1tKBmtfTrack.phiAtVertex() << ","
-                             << l1tKBmtfTrack.curvature() << ","
-                             << l1tKBmtfTrack.positionAngle() << ","
-                             << l1tKBmtfTrack.bendingAngle() << ","
-                             << l1tKBmtfTrack.ptUnconstrained() << ","
-                             << l1tKBmtfTrack.dxy() << ","
-                             << l1tKBmtfTrack.approxChi2() << ","
-                             << l1tKBmtfTrack.coarseEta() << ","
-                             << l1tKBmtfTrack.rank() << ","
-                             << l1tKBmtfTrack.fineEta() << ","
-                             << l1tKBmtfTrack.hasFineEta() << ","
-                             << l1tKBmtfTrack.sector() << ","
-                             << l1tKBmtfTrack.hitPattern() << ","
-                             << l1tKBmtfTrack.quality() << ","
-                             << l1tKBmtfTrack.wheel() << ","
-                             << l1tKBmtfTrack.step() << ","
-                            //  << l1tKBmtfTrack.curvatureAtMuon() << ","
-                            //  << l1tKBmtfTrack.phiAtMuon() << ","
-                            //  << l1tKBmtfTrack.phiBAtMuon() << ","
-                             << l1tGmtMuon.hwEtaAtVtx() << ","
-                             << l1tGmtMuon.hwPhiAtVtx() << ","
-                             << l1tGmtMuon.etaAtVtx() << ","
-                             << l1tGmtMuon.phiAtVtx() << ",";
+            fileNNBmtfStubs_    << iEvent.id().run() << "," << iEvent.luminosityBlock() << "," << iEvent.id().event() << ","
+                                // RECO quantities
+                                << recoMuon.pt() << ","                                            // "ptReco,"
+                                << stateAtMuSt2.globalPosition().eta() << ","                      // "etaExtRecoSt2,"
+                                << stateAtMuSt2.globalPosition().phi() << ","                      // "phiExtRecoSt2,"
+                                << recoMuon.charge() << ","                                        // "chargeReco,"
+                                << recoMuon.eta() << ","                                           // "etaVtxReco,"
+                                << recoMuon.phi() << ","                                           // "phiVtxReco,"
+                                << "-1" << ","                                                     // "dXYReco,"
+                                << "1" << ","                                                      // "isTight,"
+                                // L1 quantities
+                                << calcPtGeV(l1tRegMuon.hwPt()) << ","                             // "ptL1,"
+                                << calcPtGeV(l1tRegMuon.hwPtUnconstrained()) << ","                // "pt2L1,"
+                                << l1tRegMuon.hwDXY() << ","                                       // "hwDXYL1,"
+                                << calcPhysPhi(calcGlobalPhi(l1tRegMuon)) << ","                   // "phiL1,"
+                                << calcPhysEta(l1tRegMuon.hwEta()) << ","                          // "etaL1,"
+                                << l1tRegMuon.hwSign() << ","                                      // "hwSignL1,"
+                                << l1tRegMuon.hwSignValid() << ","                                 // "hwSignValidL1,"
+                                << l1tRegMuon.hwQual() << ","                                      // "hwQualityL1,"
+                                // KBMTF quantities
+                                << l1tKBmtfTrack.curvatureAtVertex() << ","                        // "kbmtfRVtx,"
+                                << l1tKBmtfTrack.phiAtVertex() << ","                              // "kbmtfPhiVtx,"
+                                << l1tKBmtfTrack.curvature() << ","                                // "kbmtfRMu,"
+                                << l1tKBmtfTrack.positionAngle() << ","                            // "kbmtfPhiMu,"
+                                << l1tKBmtfTrack.bendingAngle() << ","                             // "kbmtfPhiBendMu,"
+                                << l1tKBmtfTrack.ptUnconstrained() << ","                          // "kbmtfFloatPTUnconstrained,"
+                                << l1tKBmtfTrack.dxy() << ","                                      // "kbmtfDXY,"
+                                << l1tKBmtfTrack.approxChi2() << ","                               // "kbmtfApproxChi2,"
+                                << l1tKBmtfTrack.coarseEta() << ","                                // "kbmtfCoarseEta,"
+                                << l1tKBmtfTrack.rank() << ","                                     // "kbmtfRank,"
+                                << l1tKBmtfTrack.fineEta() << ","                                  // "kbmtfFineEta,"
+                                << l1tKBmtfTrack.hasFineEta() << ","                               // "kbmtfHasFineEta,"
+                                << l1tKBmtfTrack.sector() << ","                                   // "kbmtfSector,"
+                                << l1tKBmtfTrack.hitPattern() << ","                               // "kbmtfHitPattern,"
+                                << l1tKBmtfTrack.quality() << ","                                  // "kbmtfQuality,"
+                                << l1tKBmtfTrack.wheel() << ","                                    // "kbmtfWheel,"
+                                << l1tKBmtfTrack.step() << ","                                     // "kbmtfStep,"
+                                //  << l1tKBmtfTrack.curvatureAtMuon() << ","
+                                //  << l1tKBmtfTrack.phiAtMuon() << ","
+                                //  << l1tKBmtfTrack.phiBAtMuon() << ","
+                                // GMT quantities
+                                << l1tGmtMuon.hwEtaAtVtx() << ","                                  // "GmtHwEtaAtVtx,"
+                                << l1tGmtMuon.hwPhiAtVtx() << ","                                  // "GmtHwPhiAtVtx,"
+                                << l1tGmtMuon.etaAtVtx() << ","                                    // "GmtEtaAtVtx,"
+                                << l1tGmtMuon.phiAtVtx() << ","                                    // "GmtPhiAtVtx,"
+                                << calcPtGeV(l1tGmtMuon.hwPt()) << ","                             // "GmtPt,"
+                                << calcPtGeV(l1tGmtMuon.hwPtUnconstrained()) << ","                // "GmtPtU,"
+                                << calcPhysEta(l1tGmtMuon.hwEta()) << ","                          // "GmtEta,"
+                                << calcPhysPhi(l1tGmtMuon.hwPhi()) << ",";                         // "GmtPhi,"
 
 
             // write the number of stubs
-            fileNNBmtfStubs_ << l1tKBmtfTrack.stubs().size(); << ",";
+            fileNNBmtfStubs_ << l1tKBmtfTrack.stubs().size() << ",";
 
 
+            // STUBS INFO
             for (const auto& stub : l1tKBmtfTrack.stubs()) {
                 fileNNBmtfStubs_ << stub->stNum() << ","
                                  << stub->scNum() << ","
@@ -415,7 +424,7 @@ void NNBmtfStubExtractor::analyze(const edm::Event& iEvent, const edm::EventSetu
             }
 
             // fill dummy stubs if there are less than 4 stubs
-            for (size_t i = 0; i < (4-l1tKBmtfTrack.stubs().size();); ++i) {
+            for (size_t i = 0; i < (4-l1tKBmtfTrack.stubs().size()); ++i) {
                 fileNNBmtfStubs_ << "-1,-1,-3,-1,0,0,0,";
             }
 
