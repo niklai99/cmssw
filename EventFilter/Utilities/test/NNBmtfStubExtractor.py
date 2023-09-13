@@ -6,7 +6,7 @@
 import os
 import math
 import FWCore.ParameterSet.Config as cms
-import FWCore.Utilities.FileUtils as FileUtils
+# import FWCore.Utilities.FileUtils as FileUtils
 import FWCore.ParameterSet.VarParsing as VarParsing
 
 from Configuration.Eras.Era_Run3_cff import Run3
@@ -74,6 +74,15 @@ options.parseArguments()
 if len(options.inputFiles)==0:
     print("[ERROR] No input file given")
     exit()
+    
+    
+# input files
+# options.inputFiles is the filename that contains for each line a file name
+# we need to read the lines and put them in a list
+# fileList = []
+# with open(f"/home/nilai/CMSSW_13_1_0_pre4/src/{options.inputFiles[0]}") as f:
+#     for line in f:
+#         fileList.append("file:" + line.strip())
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(options.inputFiles)
@@ -140,11 +149,10 @@ process.extractor = cms.EDAnalyzer('NNBmtfStubExtractor',
     minThetaQuality = cms.int32(0),
     minBx           = cms.int32(-2),
     maxBx           = cms.int32(2),
-
-    filenameNNBmtfStubs = cms.string(options.outputFile.replace(".root","") + "_stubs"                 + ".csv"),
-
-    debug   = cms.bool(False),
-    verbose = cms.bool(False)
+    
+    useDummyValues  = cms.bool(False),
+    
+    filenameNNBmtfStubs = cms.string(options.outputFile.replace(".root","") + "_stubs" + ".csv")
 )
 
 process.ps = cms.Sequence(process.simKBmtfStubs + process.simKBmtfDigis + process.simGmtStage2Digis + process.extractor)
