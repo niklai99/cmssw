@@ -8,7 +8,6 @@
 #include <cmath>
 
 // user include files
-//   base class
 #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
@@ -36,17 +35,14 @@
 #include "DataFormats/L1TMuon/interface/RegionalMuonCandFwd.h"
 #include "DataFormats/L1TMuon/interface/RegionalMuonCand.h"
 
-// track extrapolation
 #include "MuonAnalysis/MuonAssociators/interface/PropagateToMuon.h"
 #include "MuonAnalysis/MuonAssociators/interface/PropagateToMuonSetup.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 
-// Magnetic field
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "TrackingTools/TrajectoryState/interface/FreeTrajectoryState.h"
 
-//
 #include "L1Trigger/L1TMuonBarrel/interface/L1TMuonBarrelKalmanStubProcessor.h"
 #include "CondFormats/L1TObjects/interface/L1MuDTTFParameters.h"
 #include "CondFormats/DataRecord/interface/L1MuDTTFParametersRcd.h"
@@ -63,154 +59,122 @@
 
 
 
-
-
-
-// using statements
+// Using statements
 using reco::MuonCollection;
 using l1t::MuonBxCollection;
 using l1t::RegionalMuonCandBxCollection;
 
 
 
-
-
-
-// ----------------------------- CLASS DECLARATION  ----------------------------
+// Class declaration
 class NNBmtfStubExtractor : public edm::stream::EDAnalyzer<> {
+public:
 
-    public:
-        // constructor and destructor
-        explicit NNBmtfStubExtractor(const edm::ParameterSet&);
-        ~NNBmtfStubExtractor() override {};
+    // Constructor
+    explicit NNBmtfStubExtractor(const edm::ParameterSet&);
+    // Destructor
+    ~NNBmtfStubExtractor() override = default;
+    // Analyzer
+    void analyze(const edm::Event&, const edm::EventSetup&) override;
 
-        // method for analyzing the events
-        void analyze(const edm::Event&, const edm::EventSetup&) override;
+private:
 
+    // Helper methods to compute simple quantities
+    int calcGlobalPhi(const l1t::RegionalMuonCand&) const;
+    double calcPhysPhi(int) const;
+    double calcPhysEta(int) const;
+    double calcPtGeV(unsigned int) const;
+    double calcDr(const l1t::RegionalMuonCand&, const l1t::Muon*) const;
+    double calcDr(const l1t::Muon*, const TrajectoryStateOnSurface*) const;
+    bool isBarrel(const l1t::Muon*) const;
 
-    private:
+    // Helper methods to initialize the analyzer
+    void initCsvHeader();
+    void initializeMuPropagators(const edm::EventSetup&);
+    FreeTrajectoryState createFTSForRecoMuon(const reco::Muon&, edm::ESHandle<MagneticField>);
+    std::tuple<TrajectoryStateOnSurface, TrajectoryStateOnSurface> propagateToStations(const FreeTrajectoryState&);
 
-        // conversion methods from hardware to physical coordinates
-        int calcGlobalPhi(const l1t::RegionalMuonCand&) const;
-        double calcPhysPhi(int) const;
-        double calcPhysEta(int) const;
-        double calcPtGeV(unsigned int) const;
+    // Helper methods to check validity of the muon
+    bool recoMuonCheck(const reco::Muon&) const;
 
-        double calcDr(const l1t::RegionalMuonCand&, const l1t::Muon*) const;
-        double calcDr(const l1t::Muon*, const TrajectoryStateOnSurface*) const;
-        bool isBarrel(const l1t::Muon*) const;
+    // Matching methods
+    std::tuple<double, int, int, int> findClosestL1Match(const edm::Event&, const TrajectoryStateOnSurface&, const BXVector<l1t::Muon>&);
+    bool doL1Matching(const l1t::RegionalMuonCand&, const L1MuKBMTrack&, const l1t::Muon&);
 
-        // muon EDM Tokens
-        edm::EDGetTokenT<MuonCollection>                recoMuonsToken_;
-        edm::EDGetTokenT<MuonBxCollection>              simGmtStage2DigisToken_;
-        edm::EDGetTokenT<RegionalMuonCandBxCollection>  simKBmtfDigisToken_;
-        edm::EDGetTokenT<L1MuKBMTrackBxCollection>      simKBmtfTracksToken_;
-        // edm::EDGetTokenT<L1MuDTChambPhContainer>        L1MuDTChambPhsToken_;
-        // edm::EDGetTokenT<L1MuDTChambThContainer>        L1MuDTChambThsToken_;
-
-        // magnetic field
-        //edm::ESHandle<MagneticField> theMagField;
-        const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magfieldToken_;
-        
-
-        // const edm::ESGetToken<L1TMuonBarrelParams, L1TMuonBarrelParamsRcd> bmtfParamsToken_;
-
-        // stub processor
-        L1TMuonBarrelKalmanStubProcessor stubProcessor_;
-
-        // propagators
-        PropagateToMuonSetup const muPropagator1stSetup_;
-        PropagateToMuonSetup const muPropagator2ndSetup_;
-
-        // cuts and constants
-        double drCut_;      // For muon matching
-        double phiMult_;
-        double etaMult_;
-        std::vector<int> cotTheta_1_;
-        std::vector<int> cotTheta_2_;
-        std::vector<int> cotTheta_3_;
+    // Helper methods to write data to file
+    void writeEventInfoToFile(const edm::Event&);
+    void writeRecoToFile(const reco::Muon&, const TrajectoryStateOnSurface&);
+    void writeL1ToFile(const l1t::RegionalMuonCand&);
+    void writeKBmtfToFile(const L1MuKBMTrack&);
+    void writeGmtToFile(const l1t::Muon&);
+    void writeStubToFile(const L1MuKBMTCombinedStub&);
+    void writeStubsToFile(const L1MuKBMTCombinedStubRefVector&);
 
 
-        // the min and max BX to be analyzed
-        int minBx_;
-        int maxBx_;
+    // CMSSW tokens
+    edm::EDGetTokenT<MuonCollection>                                recoMuonsToken_;
+    edm::EDGetTokenT<MuonBxCollection>                              simGmtStage2DigisToken_;
+    edm::EDGetTokenT<RegionalMuonCandBxCollection>                  simKBmtfDigisToken_;
+    edm::EDGetTokenT<L1MuKBMTrackBxCollection>                      simKBmtfTracksToken_;
+    const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord>  magfieldToken_;
 
-        // output files
-        string filenameNNBmtfStubs_;
-        std::ofstream fileNNBmtfStubs_;
+    // Processors
+    L1TMuonBarrelKalmanStubProcessor stubProcessor_;
 
-        // debug and verbose flags
-        bool debug_;
-        bool verbose_;
+    // Propagators
+    PropagateToMuonSetup const muPropagator1stSetup_;
+    PropagateToMuonSetup const muPropagator2ndSetup_;
+    PropagateToMuon muPropagator1st_;
+    PropagateToMuon muPropagator2nd_;
+    
+    // Input parameters
+    double drCut_;  
+    double phiMult_;
+    double etaMult_;
+    std::vector<int> cotTheta_1_;
+    std::vector<int> cotTheta_2_;
+    std::vector<int> cotTheta_3_;
+    int minBx_;
+    int maxBx_;
+    bool useDummyValues_;
+
+    // File names
+    std::string filenameNNBmtfStubs_;
+
+    // Output file
+    std::ofstream outputFile;
+
+    // Constants
+    static const double PT_CONVERSION_FACTOR;
 
 };
-// -----------------------------------------------------------------------------
+
+
+// Initialize constants
+const double NNBmtfStubExtractor::PT_CONVERSION_FACTOR = 0.5;
 
 
 
-
-
-// -------------------------------- constructor  -------------------------------
+// Constructor
 NNBmtfStubExtractor::NNBmtfStubExtractor(const edm::ParameterSet& iConfig):
-    recoMuonsToken_(consumes<MuonCollection>(iConfig.getParameter<edm::InputTag>("recoMuons"))),                                    // reco muons token
-    simGmtStage2DigisToken_(consumes<MuonBxCollection>(iConfig.getParameter<edm::InputTag>("l1tMuonBXVector"))),                    // emulated l1t GMT BMTF muon token
-    simKBmtfDigisToken_(consumes<RegionalMuonCandBxCollection>(iConfig.getParameter<edm::InputTag>("l1tRegionalMuonCandBXVector"))),// emulated l1t BMTF regional candidate token
-    simKBmtfTracksToken_(consumes<L1MuKBMTrackBxCollection>(iConfig.getParameter<edm::InputTag>("L1MuKBMTrackBXVector"))),          // emulated l1t KBMTF track token
+    recoMuonsToken_(consumes<MuonCollection>(iConfig.getParameter<edm::InputTag>("recoMuons"))),
+    simGmtStage2DigisToken_(consumes<MuonBxCollection>(iConfig.getParameter<edm::InputTag>("l1tMuonBXVector"))),
+    simKBmtfDigisToken_(consumes<RegionalMuonCandBxCollection>(iConfig.getParameter<edm::InputTag>("l1tRegionalMuonCandBXVector"))),
+    simKBmtfTracksToken_(consumes<L1MuKBMTrackBxCollection>(iConfig.getParameter<edm::InputTag>("L1MuKBMTrackBXVector"))),  
     magfieldToken_(consumesCollector().esConsumes()),
-    muPropagator1stSetup_(iConfig.getParameter<edm::ParameterSet>("muProp1st"),consumesCollector()),                                // reco muon propagator to St1
-    muPropagator2ndSetup_(iConfig.getParameter<edm::ParameterSet>("muProp2nd"),consumesCollector()),                                // reco muon propagator to St2
-    drCut_(iConfig.getParameter<double>("drCut")),                                                                                  // DR cut
-    phiMult_(iConfig.getParameter<double>("phiMult")),                                                                              // GMT muon phi conversion
-    etaMult_(iConfig.getParameter<double>("etaMult")),                                                                              // GMT muon eta conversion
-    minBx_(iConfig.getParameter<int>("minBx")),                                                                                     // the min BX to be analyzed [0]
-    maxBx_(iConfig.getParameter<int>("maxBx")),                                                                                     // the max BX to be analyzed [3564]
-    filenameNNBmtfStubs_(iConfig.getParameter<string>("filenameNNBmtfStubs")),                                                      // csv filename
-    fileNNBmtfStubs_(filenameNNBmtfStubs_),
-    debug_(iConfig.getParameter<bool>("debug")),                                                                                    // debug flag (currently not used)
-    verbose_(iConfig.getParameter<bool>("verbose"))                                                                                 // verbose flag (currently not used)
+    muPropagator1stSetup_(iConfig.getParameter<edm::ParameterSet>("muProp1st"), consumesCollector()),
+    muPropagator2ndSetup_(iConfig.getParameter<edm::ParameterSet>("muProp2nd"), consumesCollector()),
+    drCut_(iConfig.getParameter<double>("drCut")),
+    phiMult_(iConfig.getParameter<double>("phiMult")),
+    etaMult_(iConfig.getParameter<double>("etaMult")),
+    minBx_(iConfig.getParameter<int>("minBx")),
+    maxBx_(iConfig.getParameter<int>("maxBx")),
+    useDummyValues_(iConfig.getParameter<bool>("useDummyValues")),
+    filenameNNBmtfStubs_(iConfig.getParameter<std::string>("filenameNNBmtfStubs")),
+    outputFile(filenameNNBmtfStubs_)
 {
-
-    fileNNBmtfStubs_ << "run,"
-                     << "ls,"
-                     << "event,"
-                     << "ptReco,"
-                     << "etaExtRecoSt2,"
-                     << "phiExtRecoSt2,"
-                     << "chargeReco,"
-                     << "etaVtxReco,"
-                     << "phiVtxReco,"
-                     << "dXYReco,"
-                     << "isTight,"
-                     // L1 quantities
-                     << "ptL1,"
-                     << "pt2L1,"
-                     << "hwDXYL1,"
-                     << "phiL1,"
-                     << "etaL1,"
-                     << "hwSignL1,"
-                     << "hwSignValidL1,"
-                     << "hwQualityL1,"
-                     //    << "hwPhiAtVtx,"
-                     //    << "hwEtaAtVtx,"
-                     //    << "phiAtVtx,"
-                     //    << "etaAtVtx,"
-                     //    << "tfMuonIndex,"
-                     // KBMTF quantities
-                     << "kbmtfRVtx,kbmtfPhiVtx,kbmtfRMu,kbmtfPhiMu,kbmtfPhiBendMu,kbmtfFloatPTUnconstrained,kbmtfDXY,kbmtfApproxChi2,kbmtfCoarseEta,kbmtfRank,kbmtfFineEta,kbmtfHasFineEta,"
-                     << "kbmtfSector,kbmtfHitPattern,kbmtfQuality,kbmtfWheel,kbmtfStep,"
-                     // GMT quantities
-                     << "GmtHwEtaAtVtx,GmtHwPhiAtVtx,GmtEtaAtVtx,GmtPhiAtVtx,GmtPt,GmtPtU,GmtEta,GmtPhi,"
-                     << "n_stubs,"
-                     << "s1_stNum,s1_scNum,s1_whNum,s1_eta,s1_phi,s1_phiB,s1_quality,"
-                     << "s2_stNum,s2_scNum,s2_whNum,s2_eta,s2_phi,s2_phiB,s2_quality,"
-                     << "s3_stNum,s3_scNum,s3_whNum,s3_eta,s3_phi,s3_phiB,s3_quality,"
-                     << "s4_stNum,s4_scNum,s4_whNum,s4_eta,s4_phi,s4_phiB,s4_quality,"
-                     << std::endl;
-
+    initCsvHeader();
 }
-// -----------------------------------------------------------------------------
-
-
 
 
 
@@ -219,217 +183,70 @@ void NNBmtfStubExtractor::analyze(const edm::Event& iEvent, const edm::EventSetu
 
     using namespace edm;
 
-    //--------------------------------------------------------------------------
-    //
-    // Initializations
-    //
-    //--------------------------------------------------------------------------
-    // muon propagators
-    PropagateToMuon muPropagator1st_ = muPropagator1stSetup_.init(iSetup);  // propagator to 1st muon station
-    PropagateToMuon muPropagator2nd_ = muPropagator2ndSetup_.init(iSetup);  // propagator to 2nd muon station
+    // Initialization
+    initializeMuPropagators(iSetup);
 
-    // matched and unmatched muons vectors
-    // std::vector<const ScouterMuon*>   vMatchedMuons;            // vector of matched muons in event
-    // std::vector<const ScouterMuon*>   vMatchedMuonsWithKBMTF;   // vector of matched KBMTF muons in event
-    // std::vector<const L1ScouterMuon*> vUnMatchedMuons;          // vector of UNmatched muons in event
-    L1MuKBMTCombinedStubCollection    vCombinedStubs;           // vector of combined stubs in event
-
-    // BMTF parameters
-    // const L1TMuonBarrelParams& bmtfParams = iSetup.getData(bmtfParamsToken_);
-    // L1MuDTTFMasks msks = bmtfParams.l1mudttfmasks;
-
-    //
+    // Fetch data from the event
     BXVector<l1t::Muon> vGmtMuons = iEvent.get(simGmtStage2DigisToken_);
     vector<reco::Muon> vRecoMuons = iEvent.get(recoMuonsToken_);
-    // vUGMTmuons.setBXRange(0,0);
+    auto const theMagField        = iSetup.getHandle(magfieldToken_);
 
-    auto const theMagField = iSetup.getHandle(magfieldToken_);
-    //--------------------------------------------------------------------------
-
-
-
-    //--------------------------------------------------------------------------
-    //
-    // Match KBMTF
-    //
-    //--------------------------------------------------------------------------
-    // loop over reco muons
-    int ii = -1;
+    // Iterate over reconstructed muons
+    int recoMuonIndex = -1;
     for (const auto& recoMuon : vRecoMuons) {
+        ++recoMuonIndex;
 
-        ++ii;
+        // Skip if not a global muon (currently not implemented)
+        if (!recoMuonCheck(recoMuon)) continue;
 
-        double l1dr_min = 100.0;
-        int l1match_jj = -1;
-        int l1match_kk = -1;
-        int l1match_ll = -1;
+        // TODO: tight muon selection
+        // isRecoTight = ?
+        bool isRecoTight = true;
+        if (!isRecoTight) continue;
 
-        // create FreeTrajectoryState for propagation
-        FreeTrajectoryState* ftsRecoMuon = new FreeTrajectoryState(
-            GlobalPoint(
-                recoMuon.vx(),
-                recoMuon.vy(),
-                recoMuon.vz()
-            ),
-            GlobalVector(
-                recoMuon.px(),
-                recoMuon.py(),
-                recoMuon.pz()
-            ),
-            recoMuon.charge(),
-            theMagField.product()
-        );
+        // Setup for propagation and matching
+        auto ftsRecoMuon = createFTSForRecoMuon(recoMuon, theMagField);
+        auto [stateAtStation1, stateAtStation2] = propagateToStations(ftsRecoMuon);
 
-        // std::cout << recoMuon.vx() << " " << recoMuon.vy() << " " << recoMuon.vz() << " " << recoMuon.px() << " " << recoMuon.py() << " " << recoMuon.pz() << std::endl;
+        // Validate propagation results
+        if (!stateAtStation1.isValid() || !stateAtStation2.isValid()) continue;
+
+        // Match reco muon to L1 muon
+        auto [minDeltaR, matchedRegionalMuonIndex, matchedKBmtfTrackIndex, matchedGmtMuonIndex] = findClosestL1Match(iEvent, stateAtStation2, vGmtMuons);
+
+        // Skip if no L1 muon was matched
+        if ( !(minDeltaR < drCut_) ) continue;
         
+        // Get RECO matches (L1, KBMTF, GMT)
+        const auto& l1tRegMuon    = iEvent.get(simKBmtfDigisToken_)[matchedRegionalMuonIndex];
+        const auto& l1tKBmtfTrack = iEvent.get(simKBmtfTracksToken_)[matchedKBmtfTrackIndex];
+        const auto& l1tGmtMuon    = vGmtMuons[matchedGmtMuonIndex];
 
-        // propagate to St1 and St2
-        TrajectoryStateOnSurface stateAtMuSt1 = muPropagator1st_.extrapolate(*ftsRecoMuon);
-        TrajectoryStateOnSurface stateAtMuSt2 = muPropagator2nd_.extrapolate(*ftsRecoMuon);
+        // Write data to file 
+        writeEventInfoToFile(iEvent);
+        writeRecoToFile(recoMuon, stateAtStation2);
+        writeL1ToFile(l1tRegMuon);
+        writeKBmtfToFile(l1tKBmtfTrack);
+        writeGmtToFile(l1tGmtMuon);
 
-        // continue only if reco track is global muon
-        bool recoMuonCheck = true; // recoMuon.isGlobalMuon();
-        if (recoMuonCheck) {
-            bool tight_ = 1; // track.passed(3); // track.muonID("GlobalMuonPromptTight");
+        unsigned int nStubs = l1tKBmtfTrack.stubs().size();
 
-            // std::cout << "0" << std::endl;
+        // write the number of stubs
+        outputFile << nStubs << ",";
 
-            // if propagation is valid...
-            if (stateAtMuSt1.isValid() && stateAtMuSt2.isValid()) {
+        // Sort the stubs by their station numbers
+        L1MuKBMTCombinedStubRefVector sortedStubs = l1tKBmtfTrack.stubs(); // Assuming this returns a copy or a const reference
 
-            	// std::cout << "-1" << std::endl;
+        // Sorting lambda
+        std::sort(sortedStubs.begin(), sortedStubs.end(), [](const auto& a, const auto& b) {
+            return a->stNum() < b->stNum();
+        });
 
-                // loop over KBMTF l1tRegionalMuonCands
-                int jj = -1;
-                for (const auto& l1tRegMuon : iEvent.get(simKBmtfDigisToken_)) {
-                    ++jj;
+        // Write stubs to file
+        writeStubsToFile(sortedStubs);
 
-                    // std::cout << "--2" << std::endl;
-
-                    // loop over KBMTF L1MuKBMTrack
-                    int kk = -1;
-                    for (const auto& l1tKBmtfTrack : iEvent.get(simKBmtfTracksToken_)) {
-                        ++kk;
-
-                        // std::cout << "---3" << std::endl;
-
-                        // loop over uGMT muons
-                        int ll = -1;
-                        for(const auto& l1tGmtMuon : vGmtMuons) {
-                            ++ll;
-
-                            // std::cout << "----4" << std::endl;
-
-                            // matching BMTF KF track with internal KF track + matching GMT KF track with BMTF kf track
-                            bool fineEtaCheck   = (l1tKBmtfTrack.hasFineEta()==false) && (l1tRegMuon.hwEta()==l1tKBmtfTrack.coarseEta());
-                            bool coarseEtaCheck = (l1tKBmtfTrack.hasFineEta()==true)  && (l1tRegMuon.hwEta()==l1tKBmtfTrack.fineEta());
-                            bool etaCheck       = fineEtaCheck || coarseEtaCheck;
-                            bool uncPtCheck     = l1tRegMuon.hwPtUnconstrained()==l1tGmtMuon.hwPtUnconstrained();
-                            bool dxyCheck       = l1tRegMuon.hwDXY()==l1tGmtMuon.hwDXY();
-                            if (etaCheck && uncPtCheck && dxyCheck) {
-
-                                // std::cout << "----4 if" << std::endl;
-
-                                // compute DR between l1t and reco muon candidates
-                                double dr = calcDr(&l1tGmtMuon, &stateAtMuSt2);
-                                if (dr < l1dr_min) {
-                                    l1dr_min = dr;
-                                    l1match_jj = jj;
-                                    l1match_kk = kk;
-                                    l1match_ll = ll;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (l1dr_min < drCut_) {
-            const auto& l1tRegMuon    = iEvent.get(simKBmtfDigisToken_)[l1match_jj];
-            const auto& l1tKBmtfTrack = iEvent.get(simKBmtfTracksToken_)[l1match_kk];
-            const auto& l1tGmtMuon    = vGmtMuons[l1match_ll];
-
-
-            fileNNBmtfStubs_    << iEvent.id().run() << "," << iEvent.luminosityBlock() << "," << iEvent.id().event() << ","
-                                // RECO quantities
-                                << recoMuon.pt() << ","                                            // "ptReco,"
-                                << stateAtMuSt2.globalPosition().eta() << ","                      // "etaExtRecoSt2,"
-                                << stateAtMuSt2.globalPosition().phi() << ","                      // "phiExtRecoSt2,"
-                                << recoMuon.charge() << ","                                        // "chargeReco,"
-                                << recoMuon.eta() << ","                                           // "etaVtxReco,"
-                                << recoMuon.phi() << ","                                           // "phiVtxReco,"
-                                << "-1" << ","                                                     // "dXYReco,"
-                                << "1" << ","                                                      // "isTight,"
-                                // L1 quantities
-                                << calcPtGeV(l1tRegMuon.hwPt()) << ","                             // "ptL1,"
-                                << calcPtGeV(l1tRegMuon.hwPtUnconstrained()) << ","                // "pt2L1,"
-                                << l1tRegMuon.hwDXY() << ","                                       // "hwDXYL1,"
-                                << calcPhysPhi(calcGlobalPhi(l1tRegMuon)) << ","                   // "phiL1,"
-                                << calcPhysEta(l1tRegMuon.hwEta()) << ","                          // "etaL1,"
-                                << l1tRegMuon.hwSign() << ","                                      // "hwSignL1,"
-                                << l1tRegMuon.hwSignValid() << ","                                 // "hwSignValidL1,"
-                                << l1tRegMuon.hwQual() << ","                                      // "hwQualityL1,"
-                                // KBMTF quantities
-                                << l1tKBmtfTrack.curvatureAtVertex() << ","                        // "kbmtfRVtx,"
-                                << l1tKBmtfTrack.phiAtVertex() << ","                              // "kbmtfPhiVtx,"
-                                << l1tKBmtfTrack.curvature() << ","                                // "kbmtfRMu,"
-                                << l1tKBmtfTrack.positionAngle() << ","                            // "kbmtfPhiMu,"
-                                << l1tKBmtfTrack.bendingAngle() << ","                             // "kbmtfPhiBendMu,"
-                                << l1tKBmtfTrack.ptUnconstrained() << ","                          // "kbmtfFloatPTUnconstrained,"
-                                << l1tKBmtfTrack.dxy() << ","                                      // "kbmtfDXY,"
-                                << l1tKBmtfTrack.approxChi2() << ","                               // "kbmtfApproxChi2,"
-                                << l1tKBmtfTrack.coarseEta() << ","                                // "kbmtfCoarseEta,"
-                                << l1tKBmtfTrack.rank() << ","                                     // "kbmtfRank,"
-                                << l1tKBmtfTrack.fineEta() << ","                                  // "kbmtfFineEta,"
-                                << l1tKBmtfTrack.hasFineEta() << ","                               // "kbmtfHasFineEta,"
-                                << l1tKBmtfTrack.sector() << ","                                   // "kbmtfSector,"
-                                << l1tKBmtfTrack.hitPattern() << ","                               // "kbmtfHitPattern,"
-                                << l1tKBmtfTrack.quality() << ","                                  // "kbmtfQuality,"
-                                << l1tKBmtfTrack.wheel() << ","                                    // "kbmtfWheel,"
-                                << l1tKBmtfTrack.step() << ","                                     // "kbmtfStep,"
-                                //  << l1tKBmtfTrack.curvatureAtMuon() << ","
-                                //  << l1tKBmtfTrack.phiAtMuon() << ","
-                                //  << l1tKBmtfTrack.phiBAtMuon() << ","
-                                // GMT quantities
-                                << l1tGmtMuon.hwEtaAtVtx() << ","                                  // "GmtHwEtaAtVtx,"
-                                << l1tGmtMuon.hwPhiAtVtx() << ","                                  // "GmtHwPhiAtVtx,"
-                                << l1tGmtMuon.etaAtVtx() << ","                                    // "GmtEtaAtVtx,"
-                                << l1tGmtMuon.phiAtVtx() << ","                                    // "GmtPhiAtVtx,"
-                                << calcPtGeV(l1tGmtMuon.hwPt()) << ","                             // "GmtPt,"
-                                << calcPtGeV(l1tGmtMuon.hwPtUnconstrained()) << ","                // "GmtPtU,"
-                                << calcPhysEta(l1tGmtMuon.hwEta()) << ","                          // "GmtEta,"
-                                << calcPhysPhi(l1tGmtMuon.hwPhi()) << ",";                         // "GmtPhi,"
-
-
-            // write the number of stubs
-            fileNNBmtfStubs_ << l1tKBmtfTrack.stubs().size() << ",";
-
-
-            // STUBS INFO
-            for (const auto& stub : l1tKBmtfTrack.stubs()) {
-                fileNNBmtfStubs_ << stub->stNum() << ","
-                                 << stub->scNum() << ","
-                                 << stub->whNum() << ",";
-
-                if (stub->tag()==0) {
-                    fileNNBmtfStubs_ << stub->eta1() << ",";
-                } else {
-                    fileNNBmtfStubs_ << stub->eta2() << ",";
-                }
-
-                fileNNBmtfStubs_ << stub->phi() << ","
-                                 << stub->phiB() << ","
-                                 << stub->quality() << ",";
-            }
-
-            // fill dummy stubs if there are less than 4 stubs
-            for (size_t i = 0; i < (4-l1tKBmtfTrack.stubs().size()); ++i) {
-                fileNNBmtfStubs_ << "-1,-1,-3,-1,0,0,0,";
-            }
-
-            fileNNBmtfStubs_ << std::endl;
-        }
+        outputFile << std::endl;
+        
     }
     //--------------------------------------------------------------------------
 
@@ -437,10 +254,123 @@ void NNBmtfStubExtractor::analyze(const edm::Event& iEvent, const edm::EventSetu
 // -----------------------------------------------------------------------------
 
 
+// ------------------------------ Helper methods  -----------------------------
+
+// Helper function to initialize the CSV header
+void NNBmtfStubExtractor::initCsvHeader() {
+    outputFile    << "run,ls,event,"
+                        // RECO quantities
+                        << "ptReco,etaExtRecoSt2,phiExtRecoSt2,chargeReco,"
+                        << "etaVtxReco,phiVtxReco,dXYReco,isTight,"
+                        // L1 quantities
+                        << "ptL1,pt2L1,hwDXYL1,phiL1,etaL1,hwSignL1,hwSignValidL1,hwQualityL1,"
+                        // KBMTF quantities
+                        << "kbmtfRVtx,kbmtfPhiVtx,kbmtfRMu,kbmtfPhiMu,kbmtfPhiBendMu,kbmtfFloatPTUnconstrained,kbmtfDXY,"
+                        << "kbmtfApproxChi2,kbmtfCoarseEta,kbmtfRank,kbmtfFineEta,kbmtfHasFineEta,"
+                        << "kbmtfSector,kbmtfHitPattern,kbmtfQuality,kbmtfWheel,kbmtfStep,"
+                        // GMT quantities
+                        << "GmtHwEtaAtVtx,GmtHwPhiAtVtx,GmtEtaAtVtx,GmtPhiAtVtx,GmtPt,GmtPtU,GmtEta,GmtPhi,"
+                        // STUBS quantities
+                        << "n_stubs,"
+                        << "s1_stNum,s1_scNum,s1_whNum,s1_eta,s1_qeta,s1_phi,s1_phiB,s1_quality,"
+                        << "s2_stNum,s2_scNum,s2_whNum,s2_eta,s2_qeta,s2_phi,s2_phiB,s2_quality,"
+                        << "s3_stNum,s3_scNum,s3_whNum,s3_eta,s3_qeta,s3_phi,s3_phiB,s3_quality,"
+                        << "s4_stNum,s4_scNum,s4_whNum,s4_eta,s4_qeta,s4_phi,s4_phiB,s4_quality,"
+                        << std::endl;
+}
 
 
 
-// ------------------------------ utility methods  -----------------------------
+// Helper function to initialize the propagators
+void NNBmtfStubExtractor::initializeMuPropagators(const edm::EventSetup& iSetup) {
+    muPropagator1st_ = muPropagator1stSetup_.init(iSetup);
+    muPropagator2nd_ = muPropagator2ndSetup_.init(iSetup);
+}
+
+
+
+// Helper function to create a FreeTrajectoryState for a reco muon
+FreeTrajectoryState NNBmtfStubExtractor::createFTSForRecoMuon(const reco::Muon& recoMuon, edm::ESHandle<MagneticField> magneticField) {
+    return FreeTrajectoryState(
+        GlobalPoint(recoMuon.vx(), recoMuon.vy(), recoMuon.vz()),
+        GlobalVector(recoMuon.px(), recoMuon.py(), recoMuon.pz()),
+        recoMuon.charge(),
+        magneticField.product()
+    );
+}
+
+
+
+// Helper function to propagate the reco muon to the muon stations
+std::tuple<TrajectoryStateOnSurface, TrajectoryStateOnSurface> NNBmtfStubExtractor::propagateToStations(const FreeTrajectoryState& ftsRecoMuon) {
+    auto stateAtStation1 = muPropagator1st_.extrapolate(ftsRecoMuon);
+    auto stateAtStation2 = muPropagator2nd_.extrapolate(ftsRecoMuon);
+    return {stateAtStation1, stateAtStation2};
+}
+
+
+
+// Check if the reco muon is valid
+bool NNBmtfStubExtractor::recoMuonCheck(const reco::Muon& recoMuon) const {
+    return true; 
+}
+
+
+
+// Find the closest L1 match to the reco muon
+std::tuple<double, int, int, int> NNBmtfStubExtractor::findClosestL1Match(
+    const edm::Event& iEvent, 
+    const TrajectoryStateOnSurface& stateAtStation2, 
+    const BXVector<l1t::Muon>& detectedGmtMuons) {
+
+    double minDeltaR = 100.0;
+    int matchedRegionalMuonIndex = -1, matchedKBmtfTrackIndex = -1, matchedGmtMuonIndex = -1;
+
+    // Loop over KBMTF l1tRegionalMuonCands
+    int regionalMuonIndex = -1;
+    for (const auto& regionalMuon : iEvent.get(simKBmtfDigisToken_)) {
+        ++regionalMuonIndex;
+
+        // Loop over KBMTF L1MuKBMTrack
+        int KBmtfTrackIndex = -1;
+        for (const auto& KBmtfTrack : iEvent.get(simKBmtfTracksToken_)) {
+            ++KBmtfTrackIndex;
+
+            // Loop over uGMT muons
+            int gmtMuonIndex = -1;
+            for(const auto& gmtMuon : detectedGmtMuons) {
+                ++gmtMuonIndex;
+
+                if (doL1Matching(regionalMuon, KBmtfTrack, gmtMuon)) {
+                    double deltaR = calcDr(&gmtMuon, &stateAtStation2);
+                    if (deltaR < minDeltaR) {
+                        minDeltaR                = deltaR;
+                        matchedRegionalMuonIndex = regionalMuonIndex;
+                        matchedKBmtfTrackIndex   = KBmtfTrackIndex;
+                        matchedGmtMuonIndex      = gmtMuonIndex;
+                    }
+                }
+            }
+        }
+    }
+    return {minDeltaR, matchedRegionalMuonIndex, matchedKBmtfTrackIndex, matchedGmtMuonIndex};
+}
+
+
+
+// Check if the L1 muon matches the reco muon
+bool NNBmtfStubExtractor::doL1Matching(const l1t::RegionalMuonCand& regionalMuon, const L1MuKBMTrack& KBmtfTrack, const l1t::Muon& gmtMuon) {
+    bool isCoarseEtaMatch = !KBmtfTrack.hasFineEta() && (regionalMuon.hwEta() == KBmtfTrack.coarseEta());
+    bool isFineEtaMatch   =  KBmtfTrack.hasFineEta() && (regionalMuon.hwEta() == KBmtfTrack.fineEta());
+
+    bool isEtaMatch             = isFineEtaMatch || isCoarseEtaMatch;
+    bool isPtUnconstrainedMatch = regionalMuon.hwPtUnconstrained() == gmtMuon.hwPtUnconstrained();
+    bool isDxyMatch             = regionalMuon.hwDXY() == gmtMuon.hwDXY();
+
+    return isEtaMatch && isPtUnconstrainedMatch && isDxyMatch;
+}
+
+
 
 // method that computes the globalPhi coordinate of the muon in the hardware units
 int NNBmtfStubExtractor::calcGlobalPhi(const l1t::RegionalMuonCand& muon) const {
@@ -449,6 +379,8 @@ int NNBmtfStubExtractor::calcGlobalPhi(const l1t::RegionalMuonCand& muon) const 
     globalPhi = globalPhi % 576;
     return globalPhi;
 }
+
+
 
 // method that computes the physical phi coordinate of the muon
 double NNBmtfStubExtractor::calcPhysPhi(int globalPhi) const {
@@ -459,16 +391,22 @@ double NNBmtfStubExtractor::calcPhysPhi(int globalPhi) const {
     return physPhi;
 }
 
+
+
 // method that computes the physical eta coordinate of the muon
 double NNBmtfStubExtractor::calcPhysEta(int hwEta) const {
     double physEta = 1.0 * hwEta / etaMult_;
     return physEta;
 }
 
+
+
 // method that computes the physical pt of the muon
 double NNBmtfStubExtractor::calcPtGeV(unsigned int pt) const {
-    return pt * 0.5;
+    return pt * PT_CONVERSION_FACTOR;
 }
+
+
 
 // method that computes the deltaR between a BMTF muon and a GMT muon
 double NNBmtfStubExtractor::calcDr(const l1t::RegionalMuonCand& bmtfMuon, const l1t::Muon* gmtMuon) const {
@@ -476,6 +414,8 @@ double NNBmtfStubExtractor::calcDr(const l1t::RegionalMuonCand& bmtfMuon, const 
     double dEta = fabs(calcPhysEta(bmtfMuon.hwEta()) - calcPhysEta(gmtMuon->hwEta()));
     return sqrt(dPhi*dPhi + dEta*dEta);
 }
+
+
 
 // method that computes the deltaR between a GMT muon and a reco track propagated to St2
 double NNBmtfStubExtractor::calcDr(const l1t::Muon* l1tGmtMuon, const TrajectoryStateOnSurface* track) const {
@@ -495,33 +435,140 @@ double NNBmtfStubExtractor::calcDr(const l1t::Muon* l1tGmtMuon, const Trajectory
     return dr;
 }
 
+
+
 // method to check if the GMT muon is in the barrel to match it to a BMTF muon
 bool NNBmtfStubExtractor::isBarrel(const l1t::Muon* gmtMuon) const {
     // the GMT muon is in the barrel it has tfIndex between 36 and 70 (included)
     return (gmtMuon->tfMuonIndex() >= 36) && (gmtMuon->tfMuonIndex() <= 70);
 }
 
-// // method to save reco muon data
-// void NNBmtfStubExtractor::saveL1TRegMuonData(std::ofstream& ofile, const reco::Muon& recoMuon, ) { , const L1MuKBMTrack& l1tKBmtfTrack, const l1t::Muon& l1tGmtMuon) {
-//     ofile <<
-// }
-
-// // method to save l1t regional muon candidate data
-// void NNBmtfStubExtractor::saveL1TRegMuonData(std::ofstream& ofile, const l1t::RegionalMuonCand& l1tRegMuon) {
-//     ofile <<
-// }
-
-// // method to save L1MuKBMTrack data
-// void NNBmtfStubExtractor::saveL1MuKBMTrackData(std::ofstream& ofile, const L1MuKBMTrack& l1tKBmtfTrack) {
-//     ofile <<
-// }
-
-// // method to save l1t gmt muon data
-// void NNBmtfStubExtractor::saveL1TGmtMuonData(std::ofstream& ofile, const l1t::Muon& l1tGmtMuon) {
-//     ofile <<
-// }
 
 
+void NNBmtfStubExtractor::writeEventInfoToFile(const edm::Event& iEvent) {
+    outputFile << iEvent.id().run() << "," << iEvent.luminosityBlock() << "," << iEvent.id().event() << ",";
+}
+
+
+
+void NNBmtfStubExtractor::writeRecoToFile(const reco::Muon& recoMuon, const TrajectoryStateOnSurface& stateAtMuSt2) {
+    outputFile  << recoMuon.pt() << ","                                            // "ptReco,"
+                << stateAtMuSt2.globalPosition().eta() << ","                      // "etaExtRecoSt2,"
+                << stateAtMuSt2.globalPosition().phi() << ","                      // "phiExtRecoSt2,"
+                << recoMuon.charge() << ","                                        // "chargeReco,"
+                << recoMuon.eta() << ","                                           // "etaVtxReco,"
+                << recoMuon.phi() << ","                                           // "phiVtxReco,"
+                << "-1" << ","                                                     // "dXYReco,"
+                << "1"  << ",";                                                    // "isTight,"
+}
+
+
+
+void NNBmtfStubExtractor::writeL1ToFile(const l1t::RegionalMuonCand& l1tRegMuon) {
+    outputFile  << calcPtGeV(l1tRegMuon.hwPt()) << ","                             // "ptL1,"
+                << calcPtGeV(l1tRegMuon.hwPtUnconstrained()) << ","                // "pt2L1,"
+                << l1tRegMuon.hwDXY() << ","                                       // "hwDXYL1,"
+                << calcPhysPhi(calcGlobalPhi(l1tRegMuon)) << ","                   // "phiL1,"
+                << calcPhysEta(l1tRegMuon.hwEta()) << ","                          // "etaL1,"
+                << l1tRegMuon.hwSign() << ","                                      // "hwSignL1,"
+                << l1tRegMuon.hwSignValid() << ","                                 // "hwSignValidL1,"
+                << l1tRegMuon.hwQual() << ",";                                     // "hwQualityL1,"
+}
+
+
+
+void NNBmtfStubExtractor::writeKBmtfToFile(const L1MuKBMTrack& l1tKBmtfTrack) {
+    outputFile  << l1tKBmtfTrack.curvatureAtVertex() << ","                        // "kbmtfRVtx,"
+                << l1tKBmtfTrack.phiAtVertex() << ","                              // "kbmtfPhiVtx,"
+                << l1tKBmtfTrack.curvature() << ","                                // "kbmtfRMu,"
+                << l1tKBmtfTrack.positionAngle() << ","                            // "kbmtfPhiMu,"
+                << l1tKBmtfTrack.bendingAngle() << ","                             // "kbmtfPhiBendMu,"
+                << l1tKBmtfTrack.ptUnconstrained() << ","                          // "kbmtfFloatPTUnconstrained,"
+                << l1tKBmtfTrack.dxy() << ","                                      // "kbmtfDXY,"
+                << l1tKBmtfTrack.approxChi2() << ","                               // "kbmtfApproxChi2,"
+                << l1tKBmtfTrack.coarseEta() << ","                                // "kbmtfCoarseEta,"
+                << l1tKBmtfTrack.rank() << ","                                     // "kbmtfRank,"
+                << l1tKBmtfTrack.fineEta() << ","                                  // "kbmtfFineEta,"
+                << l1tKBmtfTrack.hasFineEta() << ","                               // "kbmtfHasFineEta,"
+                << l1tKBmtfTrack.sector() << ","                                   // "kbmtfSector,"
+                << l1tKBmtfTrack.hitPattern() << ","                               // "kbmtfHitPattern,"
+                << l1tKBmtfTrack.quality() << ","                                  // "kbmtfQuality,"
+                << l1tKBmtfTrack.wheel() << ","                                    // "kbmtfWheel,"
+                << l1tKBmtfTrack.step() << ",";                                    // "kbmtfStep,"
+}
+
+void NNBmtfStubExtractor::writeGmtToFile(const l1t::Muon& l1tGmtMuon) {
+    outputFile  << l1tGmtMuon.hwEtaAtVtx() << ","                                  // "GmtHwEtaAtVtx,"
+                << l1tGmtMuon.hwPhiAtVtx() << ","                                  // "GmtHwPhiAtVtx,"
+                << l1tGmtMuon.etaAtVtx() << ","                                    // "GmtEtaAtVtx,"
+                << l1tGmtMuon.phiAtVtx() << ","                                    // "GmtPhiAtVtx,"
+                << calcPtGeV(l1tGmtMuon.hwPt()) << ","                             // "GmtPt,"
+                << calcPtGeV(l1tGmtMuon.hwPtUnconstrained()) << ","                // "GmtPtU,"
+                << calcPhysEta(l1tGmtMuon.hwEta()) << ","                          // "GmtEta,"
+                << calcPhysPhi(l1tGmtMuon.hwPhi()) << ",";                         // "GmtPhi,"
+}
+
+
+
+void NNBmtfStubExtractor::writeStubsToFile(const L1MuKBMTCombinedStubRefVector& sortedStubs) {
+    
+    // Map to store stubs according to their station number
+    std::map<int, L1MuKBMTCombinedStubRef> stationToStubMap;  
+
+    // Fill the map
+    for (const auto& stub : sortedStubs) {
+        stationToStubMap[stub->stNum()] = stub;
+    }
+
+    // Initialize the iterator for cycling through the stubs
+    auto cyclicIt = sortedStubs.begin();
+
+    // Write stubs or dummy/duplicated stubs to file in station order
+    for (int station = 1; station <= 4; ++station) {
+        auto it = stationToStubMap.find(station);
+        
+        if (it != stationToStubMap.end()) {
+            // Write stub information
+            const auto& stubRef = it->second;
+            writeStubToFile(*(stubRef));
+        } else {        
+            if (useDummyValues_) {
+                // Write dummy stub information
+                outputFile << "-1,-1,-3,-1,0,0,0,0,";
+            } else {
+                // Write duplicated stub information
+                if (cyclicIt == sortedStubs.end()) {
+                    cyclicIt = sortedStubs.begin();
+                }
+                const auto& stubRef = *cyclicIt;
+                writeStubToFile(*(stubRef));
+
+                // Move to the next stub for potential further duplication
+                ++cyclicIt;
+            }
+        }
+    }
+}
+
+
+
+void NNBmtfStubExtractor::writeStubToFile(const L1MuKBMTCombinedStub& stub) {
+    outputFile  << stub.stNum() << ","
+                << stub.scNum() << ","
+                << stub.whNum() << ",";
+
+    if (stub.tag()==0) {
+        outputFile << stub.eta1() << ",";
+        outputFile << stub.qeta1() << ",";
+    } else {
+        outputFile << stub.eta2() << ",";
+        outputFile << stub.qeta2() << ",";
+    }
+
+    outputFile  << stub.phi() << "," 
+                << stub.phiB() << ","
+                << stub.quality() << ",";
+}
 
 
 
