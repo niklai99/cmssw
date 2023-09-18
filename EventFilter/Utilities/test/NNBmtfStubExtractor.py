@@ -79,13 +79,14 @@ if len(options.inputFiles)==0:
 # input files
 # options.inputFiles is the filename that contains for each line a file name
 # we need to read the lines and put them in a list
-# fileList = []
-# with open(f"/home/nilai/CMSSW_13_1_0_pre4/src/{options.inputFiles[0]}") as f:
-#     for line in f:
-#         fileList.append("file:" + line.strip())
+fileList = []
+with open(f"/home/nilai/CMSSW_13_1_0_pre4/src/_RECO_STUDIES/file_lists/{options.inputFiles[0]}") as f:
+    for line in f:
+        fileList.append("file:" + line.strip())
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(options.inputFiles)
+    fileNames = cms.untracked.vstring(*fileList),
+    secondaryFileNames = cms.untracked.vstring()
 )
 
 process.dumpED = cms.EDAnalyzer("EventContentAnalyzer")
@@ -152,7 +153,7 @@ process.extractor = cms.EDAnalyzer('NNBmtfStubExtractor',
     
     useDummyValues  = cms.bool(False),
     
-    filenameNNBmtfStubs = cms.string(options.outputFile.replace(".root","") + "_stubs" + ".csv")
+    filenameNNBmtfStubs = cms.string("/home/nilai/CMSSW_13_1_0_pre4/src/_RECO_STUDIES/dataset/" + options.outputFile.replace(".root","") + ".csv")
 )
 
 process.ps = cms.Sequence(process.simKBmtfStubs + process.simKBmtfDigis + process.simGmtStage2Digis + process.extractor)

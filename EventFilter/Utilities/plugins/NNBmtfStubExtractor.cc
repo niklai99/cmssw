@@ -272,10 +272,10 @@ void NNBmtfStubExtractor::initCsvHeader() {
                         << "GmtHwEtaAtVtx,GmtHwPhiAtVtx,GmtEtaAtVtx,GmtPhiAtVtx,GmtPt,GmtPtU,GmtEta,GmtPhi,"
                         // STUBS quantities
                         << "n_stubs,"
-                        << "s1_stNum,s1_scNum,s1_whNum,s1_eta,s1_qeta,s1_phi,s1_phiB,s1_quality,"
-                        << "s2_stNum,s2_scNum,s2_whNum,s2_eta,s2_qeta,s2_phi,s2_phiB,s2_quality,"
-                        << "s3_stNum,s3_scNum,s3_whNum,s3_eta,s3_qeta,s3_phi,s3_phiB,s3_quality,"
-                        << "s4_stNum,s4_scNum,s4_whNum,s4_eta,s4_qeta,s4_phi,s4_phiB,s4_quality,"
+                        << "s1_stNum,s1_scNum,s1_whNum,s1_eta_1,s1_qeta_1,s1_eta_2,s1_qeta_2,s1_tag,s1_phi,s1_phiB,s1_quality,"
+                        << "s2_stNum,s2_scNum,s2_whNum,s2_eta_1,s2_qeta_1,s2_eta_2,s2_qeta_2,s2_tag,s2_phi,s2_phiB,s2_quality,"
+                        << "s3_stNum,s3_scNum,s3_whNum,s3_eta_1,s3_qeta_1,s3_eta_2,s3_qeta_2,s3_tag,s3_phi,s3_phiB,s3_quality,"
+                        << "s4_stNum,s4_scNum,s4_whNum,s4_eta_1,s4_qeta_1,s4_eta_2,s4_qeta_2,s4_tag,s4_phi,s4_phiB,s4_quality,"
                         << std::endl;
 }
 
@@ -557,13 +557,11 @@ void NNBmtfStubExtractor::writeStubToFile(const L1MuKBMTCombinedStub& stub) {
                 << stub.scNum() << ","
                 << stub.whNum() << ",";
 
-    if (stub.tag()==0) {
-        outputFile << stub.eta1() << ",";
-        outputFile << stub.qeta1() << ",";
-    } else {
-        outputFile << stub.eta2() << ",";
-        outputFile << stub.qeta2() << ",";
-    }
+    outputFile  << stub.eta1()  << ","
+                << stub.qeta1() << ","
+                << stub.eta2()  << ","
+                << stub.qeta2() << ","
+                << stub.tag()   << ",";
 
     outputFile  << stub.phi() << "," 
                 << stub.phiB() << ","
