@@ -24,3 +24,8 @@ plots/
 
 EventFilter/Utilities/plugins/kBmtfMuonStubs.cc
 EventFilter/Utilities/test/kBmtfMuonStubs.py
+
+logs/
+condorlogs/
+
+_*/
